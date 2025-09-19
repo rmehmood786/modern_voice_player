@@ -476,27 +476,7 @@ els.share.addEventListener('click',()=>{
   if(it.type==='yt'){ const id=ytId(it.url); const s=Math.floor(getTime()); url=`https://www.youtube.com/watch?v=${id}&t=${s}s`; }
   (navigator.clipboard?.writeText(url)||Promise.reject()).then(()=>toast('Copied'),()=>toast('Copy failed'));
 });
-// in assets/app.js, inside renderList()
-const act = document.createElement('div');
-act.className = 'row-actions';
 
-const bPlay = document.createElement('button');
-bPlay.className = 'btn ghost';            // <- ensure 'ghost'
-bPlay.textContent = 'Play';
-bPlay.onclick = () => { state.index = i; loadCurrent(true); };
-
-const bQ = document.createElement('button');
-bQ.className = 'btn ghost';               // <- ensure 'ghost'
-bQ.textContent = 'Queue next';
-bQ.onclick = () => { state.queue.push(i); toast('Queued'); };
-
-const bRem = document.createElement('button');
-bRem.className = 'btn ghost';             // <- ensure 'ghost'
-bRem.textContent = 'Remove';
-bRem.onclick = () => { state.playlist.splice(i,1); saveStore(); renderList(); };
-
-act.append(bPlay, bQ, bRem);
-li.appendChild(act);
 
 
 /* Media Session */
