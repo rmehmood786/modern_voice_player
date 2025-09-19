@@ -70,7 +70,7 @@ body {
 
 @media (max-width: 1100px) {
   .grid-main {
-    grid-template-columns: 1fr;
+    display: block;
   }
 }
 
