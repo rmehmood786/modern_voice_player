@@ -3,6 +3,18 @@ const $ = s => document.querySelector(s);
 const fmt = s => { s=Math.max(0,Math.floor(s)); const m=String(Math.floor(s/60)).padStart(2,'0'); const ss=String(s%60).padStart(2,'0'); return m+':'+ss; };
 function toast(msg){const t=$('#toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),1300);}
 function fileNameFrom(url){ try{const u=new URL(url); return u.pathname.split('/').pop();}catch{return url.split('/').pop();}}
+function ytId(url) {
+  try {
+    const u = new URL(url);
+    if (u.hostname.includes('youtu.be')) {
+      return u.pathname.slice(1); // short link like youtu.be/abcd1234
+    }
+    return u.searchParams.get('v'); // normal YouTube link
+  } catch {
+    return null;
+  }
+}
+
 
 /* ===== State ===== */
 const SEEK_STEP=30, MIC_THRESHOLD=0.025, QUIET_DELAY=1000, DUCK_TICK=60, VIZ_BARS=72;
