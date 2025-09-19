@@ -3,7 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Aurora Voice Player</title>
+  <title>Aurora Voice Player - Enhanced</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="assets/styles.css" />
 </head>
 <body>
@@ -182,5 +183,31 @@
   <div id="toast" class="toast"></div>
 
   <script src="assets/app.js"></script>
+  <script>
+    // Simple toast notification function
+    function toast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 1300);
+    }
+
+    // Add some visual feedback for buttons
+    document.querySelectorAll('.btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        this.style.transform = 'scale(0.95)';
+        setTimeout(() => {
+          this.style.transform = '';
+        }, 100);
+      });
+    });
+
+    // Add hover effect to playlist items
+    document.addEventListener('DOMContentLoaded', function() {
+      // This would be handled by your existing JavaScript
+      // We're just adding some visual improvements here
+      toast('Aurora Voice Player Loaded');
+    });
+  </script>
 </body>
 </html>
