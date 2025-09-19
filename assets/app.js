@@ -477,9 +477,6 @@ els.share.addEventListener('click',()=>{
   (navigator.clipboard?.writeText(url)||Promise.reject()).then(()=>toast('Copied'),()=>toast('Copy failed'));
 });
 
-/* ===== Ducking (vol/duck sliders already wired above) ===== */
-let duckFactor=1;
-function applyDuck(f){ duckFactor=f; if(state.mode==='yt' && ytPlayer) ytPlayer.setVolume(Math.round(state.vol*100*f)); gain.gain.value=state.vol*f; }
 
 /* Media Session */
 if('mediaSession' in navigator){
