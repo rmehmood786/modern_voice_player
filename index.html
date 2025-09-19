@@ -28,11 +28,13 @@
   .grid{display:grid;grid-template-columns:1.2fr .8fr;gap:18px;padding:16px}
   @media (max-width:1000px){.grid{grid-template-columns:1fr}}
   .row{display:flex;gap:8px;align-items:center}
-  /* MEDIA AREA */
+  .hidden{display:none!important}
+  /* MEDIA */
   .media-card{padding:14px;border:1px solid var(--border);border-radius:16px;background:#fafbff}
   .player-wrap{position:relative;width:100%;aspect-ratio:16/9;background:#0b1020;border-radius:14px;overflow:hidden;border:1px solid var(--border)}
-  .hidden{display:none!important}
-  .cover{width:100%;height:100%;object-fit:cover}
+  .theater .player-wrap{aspect-ratio:auto;height:62vh}
+  .overlay-dim{position:fixed;inset:0;background:rgba(8,11,23,.65);backdrop-filter:blur(1px);opacity:0;pointer-events:none;transition:.2s}
+  .theater .overlay-dim{opacity:1;pointer-events:auto}
   #viz{width:100%;height:88px;border-radius:10px;background:#eef2ff;border:1px solid var(--border);margin-top:10px}
   .title{font-weight:800;margin-top:8px}
   .sub{color:var(--muted)}
@@ -43,6 +45,7 @@
   .btn.icon{padding:8px 10px;background:#eef2ff;color:#1e3a8a}
   .btn.ghost{background:#eef2ff;color:#1f2a5a}
   .btn.warn{background:#fff7ed;color:#9a3412;border:1px solid #fed7aa}
+  .btn.good{background:#ecfdf5;color:#065f46;border:1px solid #bbf7d0}
   .btn:hover{filter:brightness(.98)}
   .seek{display:grid;grid-template-columns:60px 1fr 60px;gap:10px;align-items:center;margin-top:8px}
   .sliders{display:flex;gap:18px;flex-wrap:wrap;margin-top:8px}
@@ -63,6 +66,10 @@
   .row-sub{color:var(--muted);font-size:.9rem}
   .truncate{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:460px}
   .row-actions{display:flex;gap:6px}
+  /* BOOKMARKS */
+  .marks{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+  .mark{background:#e0f2fe;color:#075985;border:1px solid #bae6fd;border-radius:999px;padding:4px 8px;cursor:pointer;font-weight:700}
+  .ab{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
   /* TOASTS */
   .toast{position:fixed;right:16px;bottom:16px;background:#111827;color:#fff;padding:10px 14px;border-radius:12px;
          box-shadow:0 12px 30px rgba(0,0,0,.25);opacity:0;transform:translateY(10px);transition:.25s}
@@ -73,6 +80,8 @@
 </style>
 </head>
 <body>
+  <div id="dim" class="overlay-dim"></div>
+
   <nav class="nav">
     <div class="brand"><span>🎧</span><span>Aurora Voice Player</span></div>
     <div class="nav-right">
@@ -90,19 +99,17 @@
 
   <main class="container">
     <!-- MAIN -->
-    <section class="card">
+    <section class="card" id="shell">
       <div class="card-h">
-        <h1 style="margin:0;font-size:1.05rem">Voice-Controlled Media Player</h1>
+        <h1 style="margin:0;font-size:1.05rem">Aurora Voice Player</h1>
         <span class="badge" id="modeBadge">Web App</span>
       </div>
 
       <div class="grid">
         <!-- LEFT: media -->
         <div class="media-card">
-          <div class="player-wrap" id="playerWrap">
-            <!-- YouTube mount -->
+          <div class="player-wrap" id="playerWrap" aria-label="Player area">
             <div id="ytMount" class="hidden" aria-label="YouTube player"></div>
-            <!-- Local cover + viz -->
             <img id="cover" class="cover" src="https://dummyimage.com/1280x720/0b1020/ffffff&text=Ready" alt="Cover"/>
           </div>
           <canvas id="viz" aria-label="Audio visualization"></canvas>
@@ -116,7 +123,27 @@
             <button id="play" class="btn primary" title="Space">Play</button>
             <button id="fwd"  class="btn icon" title="Right (+30s)">⏩</button>
             <button id="next" class="btn icon" title="Shift+Right">⏭️</button>
-            <button id="share" class="btn ghost" title="Copy current link">Share</button>
+
+            <select id="rate" class="btn ghost" title="Playback speed">
+              <option value="0.5">0.5×</option>
+              <option value="0.75">0.75×</option>
+              <option value="1" selected>1.0×</option>
+              <option value="1.25">1.25×</option>
+              <option value="1.5">1.5×</option>
+              <option value="1.75">1.75×</option>
+              <option value="2">2.0×</option>
+            </select>
+
+            <select id="sleep" class="btn ghost" title="Sleep timer">
+              <option value="0">Sleep: off</option>
+              <option value="5">5 min</option>
+              <option value="15">15 min</option>
+              <option value="30">30 min</option>
+              <option value="60">60 min</option>
+            </select>
+
+            <button id="theater" class="btn ghost" title="Theater mode">Theater</button>
+            <button id="share" class="btn ghost" title="Copy timestamp link">Share ⏱️</button>
           </div>
 
           <div class="seek">
@@ -129,6 +156,14 @@
             <label class="slider"><span>Volume</span><input id="vol" type="range" min="0" max="100" value="80"/></label>
             <label class="slider"><span>Ducking</span><input id="duck" type="range" min="20" max="100" value="35"/></label>
           </div>
+
+          <div class="ab">
+            <button id="setA" class="btn good" title="Set loop start">Set A</button>
+            <button id="setB" class="btn good" title="Set loop end">Set B</button>
+            <button id="toggleAB" class="btn warn" title="Toggle A–B loop">A–B: OFF</button>
+            <button id="addMark" class="btn ghost" title="Add bookmark at current time">+ Bookmark</button>
+          </div>
+          <div id="marks" class="marks" aria-label="Bookmarks"></div>
 
           <div class="toggles">
             <label><input id="repeat" type="checkbox"/> Repeat</label>
@@ -170,37 +205,30 @@
         </div>
       </div>
     </section>
-
-    <!-- TIPS -->
-    <section class="card">
-      <div class="card-h"><h2 style="margin:0;font-size:1rem">Tips</h2></div>
-      <div style="padding:14px">
-        <ul>
-          <li>Hosted on HTTPS (GitHub Pages) → mic & YouTube work properly.</li>
-          <li>If YouTube won’t start, click <strong>Play</strong> once (browser policy).</li>
-          <li>Use <strong>Speech input</strong> to enable voice commands (off by default).</li>
-          <li><strong>Mic ducking</strong> lowers volume while you speak (toggle to grant permission).</li>
-        </ul>
-      </div>
-    </section>
   </main>
 
   <div id="toast" class="toast"></div>
 
-<!-- Script -->
 <script>
 /* ========= UTIL ========= */
 const $ = (s)=>document.querySelector(s);
 const fmt = s => { s=Math.max(0,Math.floor(s)); const m=String(Math.floor(s/60)).padStart(2,'0'); const ss=String(s%60).padStart(2,'0'); return m+':'+ss };
-function toast(msg){const t=$('#toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),1600);}
+const params = new URLSearchParams(location.search);
+function toast(msg){const t=$('#toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),1400);}
 
 /* ========= STATE ========= */
 const SEEK_STEP=30, MIC_THRESHOLD=0.025, QUIET_DELAY=1000, DUCK_TICK=60, VIZ_BARS=64;
-let state={playlist:[], index:0, isPlaying:false, useYT:false, repeat:false, shuffle:true, duration:0, lastSpeech:0, duckAmt:.35, vol:.85, ttsIndex:null, speechOn:false, micOn:false};
+let state={
+  playlist:[], index:0, isPlaying:false, useYT:false,
+  repeat:false, shuffle:true, duration:0,
+  lastSpeech:0, duckAmt:.35, vol:.9, ttsIndex:null,
+  speechOn:false, micOn:false, rate:1.0,
+  A:null, B:null, loopAB:false, sleepId:null
+};
 
 /* ========= DOM ========= */
 const els={
-  wrap:$('#playerWrap'), ytMount:$('#ytMount'), cover:$('#cover'), viz:$('#viz'),
+  shell:$('#shell'), dim:$('#dim'), wrap:$('#playerWrap'), ytMount:$('#ytMount'), cover:$('#cover'), viz:$('#viz'),
   title:$('#trackTitle'), sub:$('#trackSub'), status:$('#status'),
   prev:$('#prev'), rew:$('#rew'), play:$('#play'), fwd:$('#fwd'), next:$('#next'),
   miniPrev:$('#miniPrev'), miniPlay:$('#miniPlay'), miniNext:$('#miniNext'),
@@ -211,7 +239,7 @@ const els={
   saveList:$('#saveList'), clearList:$('#clearList'),
   speechToggle:$('#speechToggle'), micToggle:$('#micToggle'), micPill:$('#micPill'),
   voice:$('#voice'), speakEn:$('#speakEn'), speakUr:$('#speakUr'), stopTTS:$('#stopTTS'),
-  share:$('#share'), install:$('#install')
+  share:$('#share'), rate:$('#rate'), sleep:$('#sleep'), theater:$('#theater')
 };
 function setStatus(msg,kind='info'){els.status.textContent=msg; els.status.style.color=(kind==='error')?'var(--danger)':'var(--muted)'}
 function updatePlayBtns(){ els.play.textContent = state.isPlaying ? 'Pause':'Play'; els.miniPlay.textContent = state.isPlaying ? 'Pause':'Play'; }
@@ -240,7 +268,7 @@ src.connect(gain).connect(analyser).connect(ctx.destination);
   })();
 })();
 
-/* ========= YOUTUBE (VISIBLE PLAYER) ========= */
+/* ========= YOUTUBE (VISIBLE PLAYER, controls hidden) ========= */
 let ytPlayer=null, ytReadyPromise=null, playerReadyPromise=null;
 function loadYTAPI(){
   if(window.YT && window.YT.Player) return Promise.resolve();
@@ -260,7 +288,7 @@ function createVisiblePlayer(){
       width:'100%', height:'100%', videoId:'',
       host:'https://www.youtube-nocookie.com',
       playerVars:{
-        autoplay:0, controls:1, rel:0, modestbranding:1, playsinline:1,
+        autoplay:0, controls:0, rel:0, modestbranding:1, playsinline:1,
         origin: window.location.origin
       },
       events:{
@@ -277,8 +305,8 @@ function createVisiblePlayer(){
 }
 async function ensureYTReady(){
   await loadYTAPI();
-  els.ytMount.classList.remove('hidden');        // make it visible
-  els.cover.classList.add('hidden');             // hide cover when YouTube used
+  els.ytMount.classList.remove('hidden');        // show iframe
+  els.cover.classList.add('hidden');             // hide cover
   await createVisiblePlayer();
   return true;
 }
@@ -292,6 +320,10 @@ const DEFAULT=[
 ];
 function loadStore(){ try{ const raw=localStorage.getItem('auroraPlaylist'); state.playlist=raw?JSON.parse(raw):DEFAULT.slice(); }catch{ state.playlist=DEFAULT.slice(); } }
 function saveStore(){ localStorage.setItem('auroraPlaylist', JSON.stringify(state.playlist)); }
+function keyForMarks(it){ return 'marks:'+ (it.type==='yt'? ytId(it.url) : it.url); }
+function getMarks(it){ try{ return JSON.parse(localStorage.getItem(keyForMarks(it)))||[] }catch{return []} }
+function saveMarks(it, arr){ localStorage.setItem(keyForMarks(it), JSON.stringify(arr)); }
+
 function renderList(){
   els.list.innerHTML='';
   state.playlist.forEach((it,i)=>{
@@ -321,53 +353,112 @@ function renderList(){
   });
 }
 
+/* ========= BOOKMARKS UI ========= */
+function renderMarks(){
+  const it=state.playlist[state.index]; if(!it) return;
+  const marks = getMarks(it);
+  els.marks.innerHTML='';
+  for(const m of marks){
+    const b=document.createElement('button'); b.className='mark'; b.textContent=m.label+' '+fmt(m.t);
+    b.title = 'Jump to '+fmt(m.t);
+    b.onclick=()=>seekTo(m.t,true);
+    els.marks.appendChild(b);
+  }
+}
+
 /* ========= LOAD CURRENT ========= */
 async function loadCurrent(autoplay=false){
   const it=state.playlist[state.index]; if(!it) return;
+  state.A = state.B = null; state.loopAB = false; $('#toggleAB').textContent='A–B: OFF';
   state.useYT = (it.type==='yt');
 
   if(state.useYT){
-    // show YT
     await ensureYTReady();
     const id=ytId(it.url); if(!id){ setStatus('Invalid YouTube URL','error'); return; }
     ytPlayer.cueVideoById(id);
     ytPlayer.setVolume(Math.round(state.vol*100));
     setMeta({title:it.title, sub:'YouTube', cover:`https://i.ytimg.com/vi/${id}/hqdefault.jpg`});
     state.duration=0; els.tDur.textContent='—:—';
+    applyRate(); // set speed
     if(autoplay) ytPlayer.playVideo();
   } else {
-    // show cover+viz
     els.cover.classList.remove('hidden'); els.ytMount.classList.add('hidden');
     audioEl.src=it.url;
     await audioEl.play().catch(()=>{}); audioEl.pause();
     state.duration=isFinite(audioEl.duration)?audioEl.duration:0;
     setMeta({title:it.title, sub:'Local File'});
     els.tDur.textContent=fmt(state.duration||0);
+    audioEl.playbackRate = state.rate;
     if(autoplay) play();
   }
+  renderMarks();
   updatePlayBtns(); updateProgress(); saveStore();
 }
 
-/* ========= TRANSPORT ========= */
+/* ========= TRANSPORT + CROSSFADES ========= */
+let fading=false;
+function crossfade(toPlay){
+  if(fading) return toPlay();
+  fading=true;
+  const start = performance.now(), D=400;
+  const startVol=state.vol;
+  function step(t){
+    const k=Math.min(1,(t-start)/D);
+    const v = (1-k);
+    if(state.useYT&&ytPlayer) ytPlayer.setVolume(Math.round(startVol*100*v));
+    gain.gain.value=startVol*v;
+    if(k<1) requestAnimationFrame(step); else { toPlay(); fading=false; }
+  }
+  requestAnimationFrame(step);
+}
 function play(){ if(state.useYT&&ytPlayer) ytPlayer.playVideo(); else audioEl.play(); state.isPlaying=true; updatePlayBtns(); setStatus('Playing'); if(ctx.state==='suspended') ctx.resume(); }
 function pause(){ if(state.useYT&&ytPlayer) ytPlayer.pauseVideo(); else audioEl.pause(); state.isPlaying=false; updatePlayBtns(); setStatus('Paused'); }
-function next(auto=false){ if(state.shuffle && !auto){ state.index=Math.floor(Math.random()*state.playlist.length) } else if(state.repeat && auto){ } else { state.index=(state.index+1)%state.playlist.length } loadCurrent(true); }
-function prev(){ state.index=(state.index-1+state.playlist.length)%state.playlist.length; loadCurrent(true); }
-function seekBy(d){ const cur=state.useYT&&ytPlayer? ytPlayer.getCurrentTime(): audioEl.currentTime;
-  const target=Math.max(0,Math.min((state.duration||0),cur+d)); if(state.useYT&&ytPlayer) ytPlayer.seekTo(target,true); else audioEl.currentTime=target; }
-function restart(){ if(state.useYT&&ytPlayer) ytPlayer.seekTo(0,true); else audioEl.currentTime=0; }
+function next(auto=false){ crossfade(()=>{ if(state.shuffle && !auto){ state.index=Math.floor(Math.random()*state.playlist.length) } else if(state.repeat && auto){ } else { state.index=(state.index+1)%state.playlist.length } loadCurrent(true); }); }
+function prev(){ crossfade(()=>{ state.index=(state.index-1+state.playlist.length)%state.playlist.length; loadCurrent(true); }); }
+function seekBy(d){ const cur=getTime(); const target=Math.max(0,Math.min((state.duration||0),cur+d)); seekTo(target,true); }
+function restart(){ seekTo(0,true); }
 function volBy(d){ state.vol=Math.max(0,Math.min(1,state.vol+d)); els.vol.value=Math.round(state.vol*100);
   if(state.useYT&&ytPlayer) ytPlayer.setVolume(Math.round(state.vol*100)); gain.gain.value=state.vol*duckFactor; }
 
-/* ========= PROGRESS ========= */
+/* ========= TIME / PROGRESS ========= */
+function getTime(){ return state.useYT&&ytPlayer? (ytPlayer.getCurrentTime?.()||0) : (audioEl.currentTime||0); }
+function getDur(){ return state.useYT&&ytPlayer? (ytPlayer.getDuration?.()||state.duration||0) : (isFinite(audioEl.duration)?audioEl.duration:(state.duration||0)); }
+function seekTo(s, user){ if(state.useYT&&ytPlayer) ytPlayer.seekTo(s,true); else audioEl.currentTime=s; if(user) state.isPlaying && play(); }
 function updateProgress(){
-  const pos = state.useYT&&ytPlayer? (ytPlayer.getCurrentTime?.()||0) : (audioEl.currentTime||0);
-  const dur = state.useYT&&ytPlayer? (ytPlayer.getDuration?.()||state.duration||0) : (isFinite(audioEl.duration)?audioEl.duration:(state.duration||0));
+  const pos = getTime(), dur = getDur();
   els.tCur.textContent=fmt(pos); els.tDur.textContent=dur?fmt(dur):'—:—';
   els.seek.max=Math.round((dur||1)*1000); els.seek.value=Math.round(pos*1000); state.duration=dur;
+
+  // A–B loop check
+  if(state.loopAB && state.A!=null && state.B!=null){
+    if(pos>=state.B) seekTo(state.A,false);
+  }
   requestAnimationFrame(updateProgress);
 }
-els.seek.addEventListener('input',()=>{const s=+els.seek.value/1000; if(state.useYT&&ytPlayer) ytPlayer.seekTo(s,true); else audioEl.currentTime=s});
+els.seek.addEventListener('input',()=>seekTo(+els.seek.value/1000,true));
+
+/* ========= RATE / SLEEP / THEATER ========= */
+function applyRate(){
+  if(state.useYT&&ytPlayer&&ytPlayer.setPlaybackRate){
+    ytPlayer.setPlaybackRate(state.rate);
+  } else {
+    audioEl.playbackRate = state.rate;
+  }
+}
+els.rate.addEventListener('change',()=>{ state.rate=+els.rate.value; applyRate(); toast('Speed '+state.rate+'x'); });
+
+els.sleep.addEventListener('change',()=>{
+  if(state.sleepId) { clearTimeout(state.sleepId); state.sleepId=null; }
+  const m=+els.sleep.value; if(!m){ toast('Sleep off'); return; }
+  state.sleepId = setTimeout(()=>{ pause(); toast('Sleep timer: paused'); }, m*60*1000);
+  toast('Sleep in '+m+' min');
+});
+
+els.theater.addEventListener('click',()=>{
+  const on = !els.shell.classList.contains('theater');
+  els.shell.classList.toggle('theater', on);
+  toast(on?'Theater ON':'Theater OFF');
+});
 
 /* ========= DUCKING ========= */
 let duckFactor=1;
@@ -375,7 +466,7 @@ function applyDuck(f){ duckFactor=f; if(state.useYT&&ytPlayer) ytPlayer.setVolum
 els.vol.addEventListener('input',()=>{ state.vol=+els.vol.value/100; if(state.useYT&&ytPlayer) ytPlayer.setVolume(Math.round(state.vol*100)); gain.gain.value=state.vol*duckFactor; });
 els.duck.addEventListener('input',()=>{ state.duckAmt=+els.duck.value/100; });
 
-/* ========= MIC (toggle; request on click) ========= */
+/* ========= MIC (toggle) ========= */
 let micCtx=null, micAnalyser=null, micLoop=null;
 async function startMic(){
   try{
@@ -397,10 +488,7 @@ async function startMic(){
     setStatus('Mic permission denied — ducking disabled','error'); toast('Mic permission denied');
   }
 }
-function stopMic(){
-  try{ if(micLoop) clearInterval(micLoop); if(micCtx) micCtx.close(); }catch{}
-  els.micPill.textContent='mic: off'; els.micPill.classList.remove('on'); state.micOn=false; toast('Mic disabled');
-}
+function stopMic(){ try{ if(micLoop) clearInterval(micLoop); if(micCtx) micCtx.close(); }catch{} els.micPill.textContent='mic: off'; els.micPill.classList.remove('on'); state.micOn=false; toast('Mic disabled'); }
 els.micToggle.addEventListener('change',e=>{ e.target.checked? startMic() : stopMic(); });
 
 /* ========= SPEECH RECOGNITION (toggle; OFF by default) ========= */
@@ -427,6 +515,7 @@ function handleCmd(t){
   if(/play|resume|continue|go on/.test(t)) return play();
   if(/volume up|louder/.test(t)) return volBy(+0.1);
   if(/volume down|quieter/.test(t)) return volBy(-0.1);
+  if(/speed|rate/.test(t)) { state.rate=Math.min(2,Math.max(.5,state.rate+.25)); els.rate.value=String(state.rate); applyRate(); toast('Speed '+state.rate+'x'); }
   if(/shuffle/.test(t)){ state.shuffle=!state.shuffle; els.shuffle.checked=state.shuffle; toast('Shuffle '+(state.shuffle?'ON':'OFF')) }
   if(/repeat/.test(t)){ state.repeat=!state.repeat; els.repeat.checked=state.repeat; toast('Repeat '+(state.repeat?'ON':'OFF')) }
 }
@@ -455,12 +544,26 @@ window.addEventListener('keydown',(e)=>{
   if(e.code==='ArrowLeft'){ seekBy(e.shiftKey? -SEEK_STEP : -5); }
 });
 
-/* ========= SHARE ========= */
+/* ========= A–B LOOP & BOOKMARKS ========= */
+$('#setA').addEventListener('click',()=>{ state.A=getTime(); toast('A = '+fmt(state.A)); });
+$('#setB').addEventListener('click',()=>{ state.B=getTime(); toast('B = '+fmt(state.B)); });
+$('#toggleAB').addEventListener('click',()=>{
+  state.loopAB = !state.loopAB;
+  $('#toggleAB').textContent = 'A–B: ' + (state.loopAB?'ON':'OFF');
+});
+$('#addMark').addEventListener('click',()=>{
+  const it=state.playlist[state.index]; if(!it) return;
+  const marks=getMarks(it);
+  const t=getTime(); const label='◆';
+  marks.push({t,label}); saveMarks(it,marks); renderMarks(); toast('Bookmark '+fmt(t));
+});
+
+/* ========= SHARE (timestamp) ========= */
 els.share.addEventListener('click',()=>{
-  const it=state.playlist[state.index]; if(!it){ toast('Nothing to share'); return; }
-  const url = it.url;
-  if(navigator.share && /^https?:\/\//.test(url)){ navigator.share({title:it.title,text:'Check this out',url}).catch(()=>{}); }
-  else { navigator.clipboard.writeText(url).then(()=>toast('Link copied'),()=>toast('Copy failed')); }
+  const it=state.playlist[state.index]; if(!it) return;
+  let url=it.url;
+  if(it.type==='yt'){ const id=ytId(it.url); const s=Math.floor(getTime()); url=`https://www.youtube.com/watch?v=${id}&t=${s}s`; }
+  (navigator.clipboard?.writeText(url)||Promise.reject()).then(()=>toast('Link copied'),()=>toast('Copy failed'));
 });
 
 /* ========= ADD / SAVE / CLEAR ========= */
@@ -479,7 +582,10 @@ els.saveList.addEventListener('click',()=>{ saveStore(); toast('Playlist saved')
 els.clearList.addEventListener('click',()=>{ if(!confirm('Clear playlist?')) return; state.playlist.length=0; saveStore(); renderList(); toast('Cleared'); });
 
 /* ========= BOOT ========= */
-function boot(){ loadStore(); renderList(); loadCurrent(false);
+function boot(){
+  loadStore(); renderList(); 
+  const startIdx = +params.get('i') || 0; state.index = Math.min(startIdx, state.playlist.length-1);
+  loadCurrent(false);
   els.vol.value=Math.round(state.vol*100); els.duck.value=Math.round(state.duckAmt*100); updatePlayBtns();
 }
 boot();
