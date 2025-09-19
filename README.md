@@ -5,7 +5,7 @@ A modern, browser-based media player with **YouTube playback**, **local audio**,
 Built with vanilla HTML/CSS/JS + Web Audio + YouTube IFrame API. Deployed on GitHub Pages.
 
 <p align="center">
-  <img alt="Aurora Voice Player screenshot" src="docs/screenshot.png" width="800">
+  <img alt="Aurora Voice Player screenshot" src="docs/icon-32.jpg" width="800">
 </p>
 
 [![pages](https://img.shields.io/badge/GitHub%20Pages-Live-2ea44f?logo=github)](https://<YOUR_GH_USERNAME>.github.io/<YOUR_REPO>/)
