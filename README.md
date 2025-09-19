@@ -1,12 +1,7 @@
+# VibeBox 🎶
 
-# Modern Player 🎧
-
-A modern, browser-based media player with **YouTube playback**, **local audio**, **speech input (toggleable)**, and **mic ducking**.  
-Built with vanilla HTML/CSS/JS + Web Audio + YouTube IFrame API. Deployed on GitHub Pages.
-
-<p align="center">
-  <img alt="Aurora Voice Player screenshot" src="docs/icon-32.jpg" width="800">
-</p>
+A sleek, browser-based media player that blends **YouTube streaming**, **local audio/video**, and **voice-powered controls** into one modern experience.  
+Built with vanilla HTML/CSS/JS, Web Audio, and YouTube IFrame API. Deployed on GitHub Pages.  
 
 [![pages](https://img.shields.io/badge/GitHub%20Pages-Live-2ea44f?logo=github)](https://<YOUR_GH_USERNAME>.github.io/<YOUR_REPO>/)
 [![license](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
@@ -15,34 +10,44 @@ Built with vanilla HTML/CSS/JS + Web Audio + YouTube IFrame API. Deployed on Git
 
 ## ✨ Features
 
-- 🔊 **YouTube + Local audio** (drag-drop / file picker)
-- 🗣️ **Speech input** (OFF by default) — play/pause/next/seek/volume commands
-- 🎙️ **Mic ducking** toggle — lowers volume while you speak
-- 📈 Live **audio visualization**
-- 🗂️ **Playlist** with thumbnails, drag-to-reorder, save/clear
-- ⌨️ **Hotkeys**: `Space`, `←/→` (±5s), `Shift+←/→` (prev/next)
-- 🔗 **Share** current track (Web Share / clipboard)
-- 📱 Installable (PWA prompt) and media-session controls (OS overlays)
-- 💅 Polished UI: cards, truncation for long text, sticky mini-player, toasts
+- 🎥 **YouTube + Local media** — play videos and music from anywhere
+- 🗂️ **Playlist manager** — with thumbnails, drag-to-reorder, save & clear
+- 🗣️ **Speech input** (toggle) — control playback hands-free  
+- 🎙️ **Mic ducking** — automatically lowers volume when you talk
+- 📊 **Visualizer** — smooth live audio bars
+- ⌨️ **Hotkeys** — `Space` (play/pause), `←/→` (seek), `Shift+←/→` (prev/next)
+- 🔗 **Share** — copy timestamped YouTube links
+- 📱 **Installable PWA** + OS media-session controls
+- 💅 **Modern UI** — cards, gradients, toasts, and sticky mini-player
 
 ---
 
 ## 🚀 Live Demo
 
-> [Try the live demo here](https://rmehmood786.github.io/modern_voice_player/)
+👉 [Check out VibeBox Live](https://rmehmood786.github.io/modern_voice_player/)
 
-> First click **Play** once (autoplay policy). If YouTube won’t load, disable ad-blockers for `youtube.com/iframe_api`.
+> 📝 Tip:  
+> First click **Play** once (due to browser autoplay policies).  
+> If YouTube doesn’t load, disable ad-blockers for `youtube.com/iframe_api`.
 
 ---
 
 ## 🧰 Tech Stack
 
-- HTML5, CSS3 (no frameworks)
-- JavaScript (Web Audio API, Media Session API)
-- YouTube IFrame API (`youtube-nocookie.com`)
-- GitHub Pages (static hosting)
+- **HTML5 / CSS3** — responsive, modern design  
+- **JavaScript** — Web Audio API, Media Session API  
+- **YouTube IFrame API** — privacy-friendly (`youtube-nocookie.com`)  
+- **GitHub Pages** — fast static hosting  
 
 ---
 
 ## 📦 Project Structure
 
+```plaintext
+.
+├── assets/
+│   ├── app.js       # Core logic
+│   ├── styles.css   # Styling
+├── index.html       # Entry point
+├── LICENSE
+└── README.md
