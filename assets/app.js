@@ -263,8 +263,7 @@ async function loadCurrent(autoplay=false){
     attachMedia(audioEl);
     try{ await audioEl.play(); }catch{} audioEl.pause();
     audioEl.muted=false;
-    $('#unmuteAUD').classList.add('hidden'); // audio plays unmuted once user interacted
-    // artwork
+    $('#unmuteAUD').classList.add('hidden'); // audio can be unmuted
     const cover = 'https://dummyimage.com/1280x720/0b1020/ffffff&text=Audio';
     setMeta({title:it.title || fileNameFrom(it.url), sub:'Local Audio', cover});
     state.duration=isFinite(audioEl.duration)?audioEl.duration:0;
@@ -370,24 +369,41 @@ async function startMic(){
     const s = micCtx.createMediaStreamSource(stream);
     micAnalyser = micCtx.createAnalyser(); micAnalyser.fftSize=1024; s.connect(micAnalyser);
     els.micPill.textContent='mic: on'; els.micPill.classList.add('on'); state.micOn=true;
+
     micLoop=setInterval(()=>{
-      const buf=new Uint8Array(micAnalyser.fftSize); micAnalyser.getByteTimeDomainData(buf);
-      let sum=0; for(let i=0;i<buf.length;i++){const v=(buf[i]-128)/128; sum+=v*v}
-      const rms=Math.sqrt(sum/buf.length); if(rms>MIC_THRESHOLD) state.lastSpeech=performance.now();
-      const since=performance.now()-state.lastSpeech; const target = since<QUIET_DELAY ? (1-state.duckAmt) : 1;
-      applyDuck(duckFactor+(target-duckFactor)*0.08);
+      const buf=new Uint8Array(micAnalyser.fftSize);
+      micAnalyser.getByteTimeDomainData(buf);
+      let sum=0;
+      for(let i=0;i<buf.length;i++){
+        const v=(buf[i]-128)/128;
+        sum+=v*v;
+      }
+      const rms=Math.sqrt(sum/buf.length);
+      if(rms>MIC_THRESHOLD) state.lastSpeech=performance.now();
+
+      const since = performance.now() - state.lastSpeech;
+      const target = since < QUIET_DELAY ? (1 - state.duckAmt) : 1;
+      applyDuck(duckFactor + (target - duckFactor) * 0.08);
     }, DUCK_TICK);
+
     toast('Mic enabled');
-  }catch(e){ els.micPill.textContent='mic: off'; els.micPill.classList.remove('on'); state.micOn=false; els.micToggle.checked=false; setStatus('Mic blocked','error'); }
+  }catch(e){
+    els.micPill.textContent='mic: off'; els.micPill.classList.remove('on'); state.micOn=false;
+    $('#micToggle').checked=false; setStatus('Mic blocked','error');
+  }
 }
-function stopMic(){ try{ if(micLoop) clearInterval(micLoop); if(micCtx) micCtx.close(); }catch{} els.micPill.textContent='mic: off'; els.micPill.classList.remove('on'); state.micOn=false; toast('Mic disabled'); }
+function stopMic(){
+  try{ if(micLoop) clearInterval(micLoop); if(micCtx) micCtx.close(); }catch{}
+  els.micPill.textContent='mic: off'; els.micPill.classList.remove('on'); state.micOn=false; toast('Mic disabled');
+}
 $('#micToggle').addEventListener('change',e=>{ e.target.checked? startMic() : stopMic(); });
 
 /* ===== Speech (toggle) ===== */
 let rec=null; const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
 function startSpeech(){
   if(!SR){ setStatus('SpeechRecognition unsupported','error'); $('#speechToggle').checked=false; return; }
-  if(rec){ try{rec.stop()}catch{} } rec=new SR(); rec.lang='en-GB'; rec.continuous=true; rec.interimResults=false;
+  if(rec){ try{rec.stop()}catch{} }
+  rec=new SR(); rec.lang='en-GB'; rec.continuous=true; rec.interimResults=false;
   rec.onresult=(e)=>{ for(let i=e.resultIndex;i<e.results.length;i++){ if(e.results[i].isFinal) handleCmd(e.results[i][0].transcript.toLowerCase()) } };
   rec.onerror=()=>{ if(state.speechOn) setTimeout(()=>{ try{rec.start()}catch{} },700) };
   rec.onend = ()=>{ if(state.speechOn) setTimeout(()=>{ try{rec.start()}catch{} },500) };
@@ -423,9 +439,9 @@ window.addEventListener('keydown',(e)=>{
   if(e.code==='Space'){ e.preventDefault(); state.isPlaying?pause():play(); }
   if(e.code==='ArrowRight'){ seekBy(e.shiftKey? +SEEK_STEP : +5); }
   if(e.code==='ArrowLeft'){ seekBy(e.shiftKey? -SEEK_STEP : -5); }
-  if(e.key==='s'||e.key==='S') $('#setA').click();
-  if(e.key==='d'||e.key==='D') $('#setB').click();
-  if(e.key==='f'||e.key==='F') $('#toggleAB').click();
+  if(e.key==='s'||e.key==='S') $('#setA')?.click();
+  if(e.key==='d'||e.key==='D') $('#setB')?.click();
+  if(e.key==='f'||e.key==='F') $('#toggleAB')?.click();
 });
 
 els.unmuteYT?.addEventListener('click',()=>{ try{ ytPlayer.unMute(); ytPlayer.setVolume(Math.round(state.vol*100)); els.unmuteYT.classList.add('hidden'); }catch{} });
@@ -461,41 +477,9 @@ els.share.addEventListener('click',()=>{
   (navigator.clipboard?.writeText(url)||Promise.reject()).then(()=>toast('Copied'),()=>toast('Copy failed'));
 });
 
-/* ===== Ducking ===== */
+/* ===== Ducking (vol/duck sliders already wired above) ===== */
 let duckFactor=1;
 function applyDuck(f){ duckFactor=f; if(state.mode==='yt' && ytPlayer) ytPlayer.setVolume(Math.round(state.vol*100*f)); gain.gain.value=state.vol*f; }
-els.vol.addEventListener('input',()=>{ state.vol=+els.vol.value/100; if(state.mode==='yt' && ytPlayer) ytPlayer.setVolume(Math.round(state.vol*100)); gain.gain.value=state.vol*duckFactor; });
-els.duck.addEventListener('input',()=>{ state.duckAmt=+els.duck.value/100; });
-
-/* Mic */
-let micCtx=null, micAnalyser=null, micLoop=null;
-async function startMic(){
-  try{
-    const stream = await navigator.mediaDevices.getUserMedia({audio:true});
-    micCtx = new (window.AudioContext||window.webkitAudioContext)();
-    const s = micCtx.createMediaStreamSource(stream);
-    micAnalyser = micCtx.createAnalyser(); micAnalyser.fftSize=1024; s.connect(micAnalyser);
-    els.micPill.textContent='mic: on'; els.micPill.classList.add('on'); state.micOn=true;
-    micLoop=setInterval(()=>{
-      const buf=new Uint8Array(micAnalyser.fftSize); micAnalyser.getByteTimeDomainData(buf);
-      let sum=0; for(let i=0;i<buf.length;i++){const v=(buf[i]-128)/128; sum+=v*v}
-      const rms=Math.sqrt(sum/buf.length); if(rms>MIC_THRESHOLD) state.lastSpeech=performance.now();
-      const since=performance.now()-state.lastSpeech; const target = since<QUIET_DELAY ? (1-state.duckAmt) : 1;
-      applyDuck(duckFactor+(target-duckFactor)*0.08);
-    }, DUCK_TICK);
-    toast('Mic enabled');
-  }catch(e){ els.micPill.textContent='mic: off'; els.micPill.classList.remove('on'); state.micOn=false; $('#micToggle').checked=false; setStatus('Mic blocked','error'); }
-}
-function stopMic(){ try{ if(micLoop) clearInterval(micLoop); if(micCtx) micCtx.close(); }catch{} els.micPill.textContent='mic: off'; els.micPill.classList.remove('on'); state.micOn=false; toast('Mic disabled'); }
-$('#micToggle').addEventListener('change',e=>{ e.target.checked? startMic() : stopMic(); });
-
-/* Keyboard etc. */
-window.addEventListener('keydown',(e)=>{
-  if(['INPUT','TEXTAREA','SELECT'].includes(document.activeElement.tagName)) return;
-  if(e.code==='Space'){ e.preventDefault(); state.isPlaying?pause():play(); }
-  if(e.code==='ArrowRight'){ seekBy(e.shiftKey? +SEEK_STEP : +5); }
-  if(e.code==='ArrowLeft'){ seekBy(e.shiftKey? -SEEK_STEP : -5); }
-});
 
 /* Media Session */
 if('mediaSession' in navigator){
