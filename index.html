@@ -1,1138 +1,186 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Aurora Voice Player - Enhanced</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        :root {
-            --primary: #3b82f6;
-            --primary-dark: #2563eb;
-            --primary-light: #60a5fa;
-            --secondary: #6366f1;
-            --accent: #10b981;
-            --warn: #f59e0b;
-            --danger: #ef4444;
-            --text: #1f2937;
-            --text-light: #6b7280;
-            --bg: #f8fafc;
-            --panel: #ffffff;
-            --border: #e5e7eb;
-            --chip: #eef2ff;
-            --chip-text: #1e3a8a;
-            --shadow: rgba(0, 0, 0, 0.08);
-            --shadow-dark: rgba(0, 0, 0, 0.12);
-            --transition: all 0.3s ease;
-        }
-
-        [data-theme="dark"] {
-            --primary: #60a5fa;
-            --primary-dark: #3b82f6;
-            --primary-light: #93c5fd;
-            --secondary: #818cf8;
-            --accent: #34d399;
-            --warn: #fbbf24;
-            --danger: #f87171;
-            --text: #f3f4f6;
-            --text-light: #d1d5db;
-            --bg: #111827;
-            --panel: #1f2937;
-            --border: #374151;
-            --chip: #374151;
-            --chip-text: #e5e7eb;
-            --shadow: rgba(0, 0, 0, 0.3);
-            --shadow-dark: rgba(0, 0, 0, 0.4);
-        }
-
-        * {
-            box-sizing: border-box;
-            transition: var(--transition);
-        }
-
-        body {
-            margin: 0;
-            background: var(--bg);
-            color: var(--text);
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            line-height: 1.6;
-        }
-
-        .app-container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-
-        /* Header Styles */
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 16px 24px;
-            background: linear-gradient(90deg, var(--primary-dark), var(--primary));
-            color: white;
-            border-radius: 16px;
-            margin-bottom: 24px;
-            box-shadow: 0 10px 25px var(--shadow-dark);
-        }
-
-        .brand {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-weight: 800;
-            font-size: 1.5rem;
-        }
-
-        .brand-icon {
-            font-size: 1.8rem;
-        }
-
-        .nav-right {
-            display: flex;
-            gap: 16px;
-            align-items: center;
-        }
-
-        .toggle-container {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            background: rgba(255, 255, 255, 0.15);
-            padding: 8px 16px;
-            border-radius: 50px;
-            font-weight: 600;
-        }
-
-        .toggle-switch {
-            position: relative;
-            display: inline-block;
-            width: 50px;
-            height: 24px;
-        }
-
-        .toggle-switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-
-        .slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: rgba(255, 255, 255, 0.3);
-            transition: .4s;
-            border-radius: 24px;
-        }
-
-        .slider:before {
-            position: absolute;
-            content: "";
-            height: 18px;
-            width: 18px;
-            left: 3px;
-            bottom: 3px;
-            background-color: white;
-            transition: .4s;
-            border-radius: 50%;
-        }
-
-        input:checked + .slider {
-            background-color: var(--accent);
-        }
-
-        input:checked + .slider:before {
-            transform: translateX(26px);
-        }
-
-        .theme-toggle {
-            background: rgba(255, 255, 255, 0.15);
-            border: none;
-            color: white;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.2rem;
-        }
-
-        /* Main Content Layout */
-        .main-content {
-            display: grid;
-            grid-template-columns: 1fr 350px;
-            gap: 24px;
-        }
-
-        @media (max-width: 1100px) {
-            .main-content {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        /* Player Section */
-        .player-section {
-            background: var(--panel);
-            border-radius: 20px;
-            padding: 24px;
-            box-shadow: 0 8px 20px var(--shadow);
-            border: 1px solid var(--border);
-        }
-
-        .player-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            padding-bottom: 16px;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .player-title {
-            margin: 0;
-            font-size: 1.4rem;
-            font-weight: 700;
-        }
-
-        .status-badge {
-            background: var(--chip);
-            color: var(--chip-text);
-            padding: 6px 14px;
-            border-radius: 50px;
-            font-weight: 700;
-            font-size: 0.85rem;
-        }
-
-        .player-container {
-            border-radius: 16px;
-            overflow: hidden;
-            background: linear-gradient(180deg, #0b1020 0%, #101425 100%);
-            position: relative;
-            margin-bottom: 20px;
-        }
-
-        .player-wrapper {
-            position: relative;
-            width: 100%;
-            aspect-ratio: 16/9;
-        }
-
-        #ytMount, .cover-image {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .cover-image {
-            background: #0b1020;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 3rem;
-        }
-
-        .visualization {
-            width: 100%;
-            height: 100px;
-            background: var(--bg);
-            border-radius: 12px;
-            margin-top: 16px;
-            border: 1px solid var(--border);
-        }
-
-        .track-info {
-            margin: 16px 0;
-        }
-
-        .track-title {
-            font-size: 1.4rem;
-            font-weight: 800;
-            margin: 0 0 4px 0;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-
-        .track-subtitle {
-            color: var(--text-light);
-            margin: 0;
-            font-size: 1rem;
-        }
-
-        /* Controls */
-        .controls {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 12px;
-            margin: 20px 0;
-        }
-
-        .btn {
-            border: none;
-            border-radius: 50px;
-            padding: 10px 18px;
-            font-weight: 700;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 0.95rem;
-        }
-
-        .btn-primary {
-            background: linear-gradient(90deg, var(--primary), var(--primary-dark));
-            color: white;
-        }
-
-        .btn-secondary {
-            background: var(--chip);
-            color: var(--chip-text);
-        }
-
-        .btn-warning {
-            background: #fff7ed;
-            color: #9a3412;
-            border: 1px solid #fed7aa;
-        }
-
-        .btn-success {
-            background: #ecfdf5;
-            color: #065f46;
-            border: 1px solid #bbf7d0;
-        }
-
-        .btn-icon {
-            padding: 10px;
-            width: 42px;
-            height: 42px;
-            justify-content: center;
-        }
-
-        .btn-group {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-
-        .seek-container {
-            display: grid;
-            grid-template-columns: auto 1fr auto;
-            gap: 12px;
-            align-items: center;
-            margin: 16px 0;
-        }
-
-        .time-display {
-            font-variant-numeric: tabular-nums;
-            font-weight: 600;
-            color: var(--text-light);
-            min-width: 50px;
-        }
-
-        .seek-slider {
-            width: 100%;
-            height: 6px;
-            border-radius: 3px;
-            background: var(--border);
-            outline: none;
-            -webkit-appearance: none;
-        }
-
-        .seek-slider::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            width: 16px;
-            height: 16px;
-            border-radius: 50%;
-            background: var(--primary);
-            cursor: pointer;
-        }
-
-        .sliders-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 20px;
-            margin: 16px 0;
-        }
-
-        .slider-group {
-            flex: 1;
-            min-width: 200px;
-        }
-
-        .slider-label {
-            display: block;
-            margin-bottom: 6px;
-            font-weight: 600;
-            color: var(--text);
-        }
-
-        .slider-value {
-            font-size: 0.85rem;
-            color: var(--text-light);
-            text-align: right;
-        }
-
-        /* Sidebar */
-        .sidebar {
-            display: flex;
-            flex-direction: column;
-            gap: 24px;
-        }
-
-        .sidebar-card {
-            background: var(--panel);
-            border-radius: 16px;
-            padding: 20px;
-            box-shadow: 0 8px 20px var(--shadow);
-            border: 1px solid var(--border);
-        }
-
-        .card-title {
-            font-size: 1.2rem;
-            font-weight: 700;
-            margin: 0 0 16px 0;
-            padding-bottom: 12px;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .tools {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin-bottom: 16px;
-        }
-
-        .playlist {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-            border: 1px dashed var(--border);
-            border-radius: 12px;
-            overflow: hidden;
-            background: var(--bg);
-        }
-
-        .playlist-item {
-            display: grid;
-            grid-template-columns: 50px 1fr auto;
-            gap: 12px;
-            align-items: center;
-            padding: 12px;
-            border-bottom: 1px solid var(--border);
-            background: var(--panel);
-        }
-
-        .playlist-item:last-child {
-            border-bottom: none;
-        }
-
-        .item-thumb {
-            width: 50px;
-            height: 40px;
-            border-radius: 8px;
-            object-fit: cover;
-            background: var(--border);
-        }
-
-        .item-info {
-            overflow: hidden;
-        }
-
-        .item-title {
-            font-weight: 700;
-            margin: 0;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-
-        .item-subtitle {
-            color: var(--text-light);
-            margin: 0;
-            font-size: 0.85rem;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-
-        .item-actions {
-            display: flex;
-            gap: 6px;
-        }
-
-        /* Bookmarks */
-        .bookmarks {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-        }
-
-        .bookmark {
-            background: #e0f2fe;
-            color: #075985;
-            border: 1px solid #bae6fd;
-            border-radius: 50px;
-            padding: 6px 12px;
-            font-size: 0.85rem;
-            font-weight: 600;
-            cursor: pointer;
-        }
-
-        /* Shortcuts Grid */
-        .shortcuts-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-        }
-
-        .shortcut-item {
-            padding: 8px;
-            border-radius: 8px;
-            background: var(--bg);
-        }
-
-        .shortcut-key {
-            font-weight: 800;
-            font-size: 1.1rem;
-            margin-bottom: 4px;
-        }
-
-        .shortcut-desc {
-            color: var(--text-light);
-            font-size: 0.85rem;
-            margin: 0;
-        }
-
-        /* Mini Player */
-        .mini-player {
-            position: sticky;
-            bottom: 0;
-            background: var(--panel);
-            border-top: 1px solid var(--border);
-            padding: 12px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-radius: 16px 16px 0 0;
-            box-shadow: 0 -5px 15px var(--shadow);
-        }
-
-        .mini-info {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            flex: 1;
-            overflow: hidden;
-        }
-
-        .mini-thumb {
-            width: 40px;
-            height: 40px;
-            border-radius: 8px;
-            object-fit: cover;
-            background: var(--border);
-        }
-
-        .mini-text {
-            overflow: hidden;
-        }
-
-        .mini-title {
-            font-weight: 700;
-            margin: 0;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-
-        .mini-subtitle {
-            color: var(--text-light);
-            margin: 0;
-            font-size: 0.85rem;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-
-        .mini-controls {
-            display: flex;
-            gap: 8px;
-        }
-
-        /* Toast */
-        .toast {
-            position: fixed;
-            right: 20px;
-            bottom: 20px;
-            background: var(--text);
-            color: white;
-            padding: 12px 18px;
-            border-radius: 12px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-            opacity: 0;
-            transform: translateY(20px);
-            transition: opacity 0.3s, transform 0.3s;
-            z-index: 1000;
-        }
-
-        .toast.show {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        /* Responsive Adjustments */
-        @media (max-width: 768px) {
-            .app-container {
-                padding: 12px;
-            }
-            
-            .header {
-                flex-direction: column;
-                gap: 16px;
-                padding: 16px;
-            }
-            
-            .nav-right {
-                flex-wrap: wrap;
-                justify-content: center;
-            }
-            
-            .controls {
-                flex-direction: column;
-                align-items: center;
-            }
-            
-            .btn-group {
-                justify-content: center;
-            }
-            
-            .sliders-container {
-                flex-direction: column;
-            }
-        }
-
-        /* Animation for visualization */
-        @keyframes pulse {
-            0% { opacity: 0.6; }
-            50% { opacity: 1; }
-            100% { opacity: 0.6; }
-        }
-
-        .pulse {
-            animation: pulse 1.5s infinite;
-        }
-    </style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Aurora Voice Player</title>
+  <link rel="stylesheet" href="assets/styles.css" />
 </head>
 <body>
-    <div class="app-container">
-        <!-- Header -->
-        <header class="header">
-            <div class="brand">
-                <i class="fas fa-music brand-icon"></i>
-                <span>Aurora Voice Player</span>
-            </div>
-            <div class="nav-right">
-                <div class="toggle-container">
-                    <span>Speech</span>
-                    <label class="toggle-switch">
-                        <input type="checkbox" id="speechToggle">
-                        <span class="slider"></span>
-                    </label>
-                </div>
-                <div class="toggle-container">
-                    <span>Mic Ducking</span>
-                    <label class="toggle-switch">
-                        <input type="checkbox" id="micToggle">
-                        <span class="slider"></span>
-                    </label>
-                </div>
-                <button class="theme-toggle" id="themeToggle">
-                    <i class="fas fa-moon"></i>
-                </button>
-                <button class="btn btn-primary" id="installBtn">
-                    <i class="fas fa-download"></i> Install App
-                </button>
-            </div>
-        </header>
+  <div id="dim" class="overlay-dim"></div>
 
-        <!-- Main Content -->
-        <div class="main-content">
-            <!-- Player Section -->
-            <main class="player-section">
-                <div class="player-header">
-                    <h2 class="player-title">Now Playing</h2>
-                    <span class="status-badge" id="statusBadge">Ready</span>
-                </div>
-
-                <div class="player-container">
-                    <div class="player-wrapper">
-                        <div id="ytMount" class="hidden"></div>
-                        <div class="cover-image" id="cover">
-                            <i class="fas fa-music"></i>
-                        </div>
-                    </div>
-                </div>
-
-                <canvas id="visualization" class="visualization"></canvas>
-
-                <div class="track-info">
-                    <h3 class="track-title" id="trackTitle">Select a track to begin</h3>
-                    <p class="track-subtitle" id="trackSubtitle">—</p>
-                </div>
-
-                <!-- Controls -->
-                <div class="controls">
-                    <div class="btn-group">
-                        <button class="btn btn-icon" id="prevBtn" title="Previous">
-                            <i class="fas fa-step-backward"></i>
-                        </button>
-                        <button class="btn btn-icon" id="rewBtn" title="Rewind 30s">
-                            <i class="fas fa-backward-step"></i>
-                        </button>
-                        <button class="btn btn-primary" id="playBtn">
-                            <i class="fas fa-play" id="playIcon"></i> <span id="playText">Play</span>
-                        </button>
-                        <button class="btn btn-icon" id="fwdBtn" title="Forward 30s">
-                            <i class="fas fa-forward-step"></i>
-                        </button>
-                        <button class="btn btn-icon" id="nextBtn" title="Next">
-                            <i class="fas fa-step-forward"></i>
-                        </button>
-                    </div>
-
-                    <div class="btn-group">
-                        <select class="btn btn-secondary" id="rateSelect">
-                            <option value="0.5">0.5×</option>
-                            <option value="0.75">0.75×</option>
-                            <option value="1" selected>1.0×</option>
-                            <option value="1.25">1.25×</option>
-                            <option value="1.5">1.5×</option>
-                            <option value="1.75">1.75×</option>
-                            <option value="2">2.0×</option>
-                        </select>
-
-                        <select class="btn btn-secondary" id="sleepSelect">
-                            <option value="0">Sleep: Off</option>
-                            <option value="5">5 min</option>
-                            <option value="15">15 min</option>
-                            <option value="30">30 min</option>
-                            <option value="60">60 min</option>
-                        </select>
-
-                        <button class="btn btn-secondary" id="theaterBtn">
-                            <i class="fas fa-expand"></i> Theater
-                        </button>
-
-                        <button class="btn btn-secondary" id="shareBtn">
-                            <i class="fas fa-share-alt"></i> Share
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Seek Bar -->
-                <div class="seek-container">
-                    <span class="time-display" id="currentTime">00:00</span>
-                    <input type="range" class="seek-slider" id="seekSlider" min="0" max="1000" value="0">
-                    <span class="time-display" id="duration">00:00</span>
-                </div>
-
-                <!-- Volume and Effects -->
-                <div class="sliders-container">
-                    <div class="slider-group">
-                        <label class="slider-label">Volume</label>
-                        <input type="range" class="seek-slider" id="volumeSlider" min="0" max="100" value="85">
-                        <div class="slider-value" id="volumeValue">85%</div>
-                    </div>
-                    
-                    <div class="slider-group">
-                        <label class="slider-label">Ducking</label>
-                        <input type="range" class="seek-slider" id="duckingSlider" min="20" max="100" value="35">
-                        <div class="slider-value" id="duckingValue">35%</div>
-                    </div>
-                    
-                    <div class="slider-group">
-                        <label class="slider-label">Fade</label>
-                        <input type="range" class="seek-slider" id="fadeSlider" min="0" max="10" value="0">
-                        <div class="slider-value" id="fadeValue">0s</div>
-                    </div>
-                </div>
-
-                <!-- A-B Loop and Bookmarks -->
-                <div class="controls">
-                    <div class="btn-group">
-                        <button class="btn btn-success" id="setABtn">
-                            <i class="fas fa-flag"></i> Set A
-                        </button>
-                        <button class="btn btn-success" id="setBBtn">
-                            <i class="fas fa-flag"></i> Set B
-                        </button>
-                        <button class="btn btn-warning" id="toggleABBtn">
-                            <i class="fas fa-repeat"></i> A-B: OFF
-                        </button>
-                        <button class="btn btn-secondary" id="addBookmarkBtn">
-                            <i class="fas fa-bookmark"></i> Bookmark
-                        </button>
-                    </div>
-                    
-                    <div class="btn-group">
-                        <label class="toggle-container">
-                            <span>Repeat</span>
-                            <label class="toggle-switch">
-                                <input type="checkbox" id="repeatToggle">
-                                <span class="slider"></span>
-                            </label>
-                        </label>
-                        
-                        <label class="toggle-container">
-                            <span>Shuffle</span>
-                            <label class="toggle-switch">
-                                <input type="checkbox" id="shuffleToggle" checked>
-                                <span class="slider"></span>
-                            </label>
-                        </label>
-                        
-                        <span class="status-badge" id="micStatus">Mic: Off</span>
-                    </div>
-                </div>
-
-                <!-- Bookmarks Display -->
-                <div class="bookmarks" id="bookmarksContainer"></div>
-            </main>
-
-            <!-- Sidebar -->
-            <aside class="sidebar">
-                <!-- Playlist Card -->
-                <div class="sidebar-card">
-                    <h3 class="card-title">Playlist</h3>
-                    <div class="tools">
-                        <button class="btn btn-secondary" id="addYTBtn">
-                            <i class="fab fa-youtube"></i> YouTube
-                        </button>
-                        <button class="btn btn-secondary" id="addLocalBtn">
-                            <i class="fas fa-file-audio"></i> Local
-                        </button>
-                        <button class="btn btn-secondary" id="importBtn">
-                            <i class="fas fa-file-import"></i> Import
-                        </button>
-                        <button class="btn btn-secondary" id="saveBtn">
-                            <i class="fas fa-save"></i> Save
-                        </button>
-                        <button class="btn btn-warning" id="clearBtn">
-                            <i class="fas fa-trash"></i> Clear
-                        </button>
-                    </div>
-                    <ul class="playlist" id="playlist">
-                        <li class="playlist-item">
-                            <div class="item-thumb"></div>
-                            <div class="item-info">
-                                <h4 class="item-title">Sample Track 1</h4>
-                                <p class="item-subtitle">YouTube</p>
-                            </div>
-                            <div class="item-actions">
-                                <button class="btn btn-icon"><i class="fas fa-play"></i></button>
-                                <button class="btn btn-icon"><i class="fas fa-trash"></i></button>
-                            </div>
-                        </li>
-                        <li class="playlist-item">
-                            <div class="item-thumb"></div>
-                            <div class="item-info">
-                                <h4 class="item-title">Sample Track 2</h4>
-                                <p class="item-subtitle">Local File</p>
-                            </div>
-                            <div class="item-actions">
-                                <button class="btn btn-icon"><i class="fas fa-play"></i></button>
-                                <button class="btn btn-icon"><i class="fas fa-trash"></i></button>
-                            </div>
-                        </li>
-                    </ul>
-                </div>
-
-                <!-- Bookmarks Card -->
-                <div class="sidebar-card">
-                    <h3 class="card-title">Bookmarks</h3>
-                    <div class="bookmarks" id="sidebarBookmarks">
-                        <span class="bookmark">01:25</span>
-                        <span class="bookmark">03:42</span>
-                        <span class="bookmark">05:18</span>
-                    </div>
-                </div>
-
-                <!-- Shortcuts Card -->
-                <div class="sidebar-card">
-                    <h3 class="card-title">Shortcuts</h3>
-                    <div class="shortcuts-grid">
-                        <div class="shortcut-item">
-                            <div class="shortcut-key">Space</div>
-                            <p class="shortcut-desc">Play / Pause</p>
-                        </div>
-                        <div class="shortcut-item">
-                            <div class="shortcut-key">← →</div>
-                            <p class="shortcut-desc">Seek ±5s</p>
-                        </div>
-                        <div class="shortcut-item">
-                            <div class="shortcut-key">Shift + ← →</div>
-                            <p class="shortcut-desc">Next / Prev</p>
-                        </div>
-                        <div class="shortcut-item">
-                            <div class="shortcut-key">S</div>
-                            <p class="shortcut-desc">Set Point A</p>
-                        </div>
-                        <div class="shortcut-item">
-                            <div class="shortcut-key">D</div>
-                            <p class="shortcut-desc">Set Point B</p>
-                        </div>
-                        <div class="shortcut-item">
-                            <div class="shortcut-key">F</div>
-                            <p class="shortcut-desc">Toggle A-B</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Audio Effects Card -->
-                <div class="sidebar-card">
-                    <h3 class="card-title">Audio Effects</h3>
-                    <div class="tools">
-                        <button class="btn btn-secondary" data-eq="flat">
-                            <i class="fas fa-sliders"></i> Flat
-                        </button>
-                        <button class="btn btn-secondary" data-eq="bass">
-                            <i class="fas fa-volume-up"></i> Bass Boost
-                        </button>
-                        <button class="btn btn-secondary" data-eq="vocal">
-                            <i class="fas fa-microphone"></i> Vocal Boost
-                        </button>
-                    </div>
-                    <p class="shortcut-desc">Effects apply to local files only</p>
-                </div>
-            </aside>
-        </div>
-
-        <!-- Mini Player -->
-        <div class="mini-player">
-            <div class="mini-info">
-                <div class="mini-thumb"></div>
-                <div class="mini-text">
-                    <h4 class="mini-title" id="miniTitle">No track selected</h4>
-                    <p class="mini-subtitle" id="miniSubtitle">—</p>
-                </div>
-            </div>
-            <div class="mini-controls">
-                <button class="btn btn-icon" id="miniPrevBtn">
-                    <i class="fas fa-step-backward"></i>
-                </button>
-                <button class="btn btn-primary btn-icon" id="miniPlayBtn">
-                    <i class="fas fa-play"></i>
-                </button>
-                <button class="btn btn-icon" id="miniNextBtn">
-                    <i class="fas fa-step-forward"></i>
-                </button>
-            </div>
-        </div>
-
-        <!-- Toast Notification -->
-        <div class="toast" id="toast"></div>
+  <nav class="nav">
+    <div class="brand"><span>🎧</span><span>Aurora Voice Player</span></div>
+    <div class="nav-right">
+      <label class="row" style="gap:8px"><input id="speechToggle" type="checkbox" /><span>Speech input</span></label>
+      <label class="row" style="gap:8px"><input id="micToggle" type="checkbox" /><span>Mic ducking</span></label>
+      <button id="install" class="chip">Install</button>
     </div>
+  </nav>
 
-    <script>
-        // Simplified implementation for demonstration purposes
-        document.addEventListener('DOMContentLoaded', function() {
-            // Theme toggle functionality
-            const themeToggle = document.getElementById('themeToggle');
-            themeToggle.addEventListener('click', () => {
-                const isDark = document.body.getAttribute('data-theme') === 'dark';
-                document.body.setAttribute('data-theme', isDark ? 'light' : 'dark');
-                themeToggle.innerHTML = isDark ? '<i class="fas fa-moon"></i>' : '<i class="fas fa-sun"></i>';
-                showToast(`Theme changed to ${isDark ? 'light' : 'dark'} mode`);
-            });
+  <main class="container">
+    <section class="card">
+      <div class="card-h">
+        <h1 class="h1">Aurora Voice Player</h1>
+        <span class="badge" id="modeBadge">Web App</span>
+      </div>
 
-            // Play/Pause functionality
-            const playBtn = document.getElementById('playBtn');
-            const playIcon = document.getElementById('playIcon');
-            const playText = document.getElementById('playText');
-            const miniPlayBtn = document.getElementById('miniPlayBtn');
-            let isPlaying = false;
+      <div class="grid-main">
+        <!-- LEFT: Stage -->
+        <div class="now">
+          <div class="player-shell">
+            <div class="player-wrap" id="playerWrap" aria-label="Player">
 
-            function togglePlay() {
-                isPlaying = !isPlaying;
-                playIcon.className = isPlaying ? 'fas fa-pause' : 'fas fa-play';
-                playText.textContent = isPlaying ? 'Pause' : 'Play';
-                miniPlayBtn.innerHTML = isPlaying ? '<i class="fas fa-pause"></i>' : '<i class="fas fa-play"></i>';
-                showToast(isPlaying ? 'Playback started' : 'Playback paused');
-            }
+              <!-- YouTube stage -->
+              <div id="ytStage" class="stage hidden">
+                <div id="ytMount"></div>
+                <button id="unmuteYT" class="unmute hidden" title="Unmute">Unmute 🔊</button>
+              </div>
 
-            playBtn.addEventListener('click', togglePlay);
-            miniPlayBtn.addEventListener('click', togglePlay);
+              <!-- Local video stage -->
+              <div id="videoStage" class="stage hidden">
+                <video id="localVideo" playsinline></video>
+                <button id="unmuteVID" class="unmute hidden" title="Unmute">Unmute 🔊</button>
+              </div>
 
-            // Volume slider
-            const volumeSlider = document.getElementById('volumeSlider');
-            const volumeValue = document.getElementById('volumeValue');
-            
-            volumeSlider.addEventListener('input', () => {
-                volumeValue.textContent = `${volumeSlider.value}%`;
-            });
+              <!-- Local audio stage (card replaces the video/iframe) -->
+              <div id="audioStage" class="stage hidden">
+                <img id="audioCover" class="cover" alt="Artwork" />
+                <div class="audio-overlay">
+                  <div class="audio-row">
+                    <button id="bigPrev" class="btn icon">⏮️</button>
+                    <button id="bigPlay" class="btn primary">Play</button>
+                    <button id="bigNext" class="btn icon">⏭️</button>
+                  </div>
+                </div>
+                <button id="unmuteAUD" class="unmute hidden" title="Unmute">Unmute 🔊</button>
+              </div>
 
-            // Ducking slider
-            const duckingSlider = document.getElementById('duckingSlider');
-            const duckingValue = document.getElementById('duckingValue');
-            
-            duckingSlider.addEventListener('input', () => {
-                duckingValue.textContent = `${duckingSlider.value}%`;
-            });
+            </div>
+          </div>
 
-            // Fade slider
-            const fadeSlider = document.getElementById('fadeSlider');
-            const fadeValue = document.getElementById('fadeValue');
-            
-            fadeSlider.addEventListener('input', () => {
-                fadeValue.textContent = `${fadeSlider.value}s`;
-            });
+          <!-- Visualizer (auto-hidden for YT) -->
+          <canvas id="viz" aria-label="Visualization"></canvas>
 
-            // Seek slider simulation
-            const seekSlider = document.getElementById('seekSlider');
-            const currentTime = document.getElementById('currentTime');
-            let seekInterval;
-            
-            function simulatePlayback() {
-                let value = 0;
-                clearInterval(seekInterval);
-                
-                if (isPlaying) {
-                    seekInterval = setInterval(() => {
-                        if (value < 1000) {
-                            value += 10;
-                            seekSlider.value = value;
-                            updateTimeDisplay(value);
-                        } else {
-                            clearInterval(seekInterval);
-                        }
-                    }, 300);
-                }
-            }
-            
-            function updateTimeDisplay(value) {
-                const totalSeconds = Math.floor(value / 1000 * 300); //假设总时长300秒
-                const minutes = Math.floor(totalSeconds / 60);
-                const seconds = totalSeconds % 60;
-                currentTime.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-            }
-            
-            seekSlider.addEventListener('input', () => {
-                updateTimeDisplay(seekSlider.value);
-            });
+          <!-- Meta -->
+          <div class="title truncate" id="trackTitle">—</div>
+          <div class="sub truncate" id="trackSub">—</div>
 
-            // Playback rate
-            const rateSelect = document.getElementById('rateSelect');
-            rateSelect.addEventListener('change', () => {
-                showToast(`Playback speed set to ${rateSelect.value}x`);
-            });
+          <!-- Transport -->
+          <div class="controls">
+            <div class="btn-group">
+              <button id="prev" class="btn icon" title="Shift+Left">⏮️</button>
+              <button id="rew"  class="btn icon" title="Left (–30s)">⏪</button>
+              <button id="play" class="btn primary" title="Space">Play</button>
+              <button id="fwd"  class="btn icon" title="Right (+30s)">⏩</button>
+              <button id="next" class="btn icon" title="Shift+Right">⏭️</button>
+            </div>
 
-            // Sleep timer
-            const sleepSelect = document.getElementById('sleepSelect');
-            sleepSelect.addEventListener('change', () => {
-                if (sleepSelect.value !== '0') {
-                    showToast(`Sleep timer set for ${sleepSelect.value} minutes`);
-                } else {
-                    showToast('Sleep timer disabled');
-                }
-            });
+            <div class="btn-group">
+              <select id="rate" class="btn ghost" title="Playback speed">
+                <option value="0.5">0.5×</option><option value="0.75">0.75×</option>
+                <option value="1" selected>1.0×</option>
+                <option value="1.25">1.25×</option><option value="1.5">1.5×</option>
+                <option value="1.75">1.75×</option><option value="2">2.0×</option>
+              </select>
 
-            // Theater mode
-            const theaterBtn = document.getElementById('theaterBtn');
-            theaterBtn.addEventListener('click', () => {
-                document.body.classList.toggle('theater-mode');
-                const isTheater = document.body.classList.contains('theater-mode');
-                theaterBtn.innerHTML = isTheater ? 
-                    '<i class="fas fa-compress"></i> Normal' : 
-                    '<i class="fas fa-expand"></i> Theater';
-                showToast(isTheater ? 'Theater mode enabled' : 'Theater mode disabled');
-            });
+              <select id="sleep" class="btn ghost" title="Sleep timer">
+                <option value="0">Sleep: off</option>
+                <option value="5">5 min</option><option value="15">15 min</option>
+                <option value="30">30 min</option><option value="60">60 min</option>
+              </select>
 
-            // Share functionality
-            const shareBtn = document.getElementById('shareBtn');
-            shareBtn.addEventListener('click', () => {
-                showToast('Share link copied to clipboard');
-            });
+              <button id="theater" class="btn ghost" title="Theater mode">Theater</button>
+              <button id="share" class="btn ghost" title="Copy timestamp link">Share ⏱️</button>
+            </div>
+          </div>
 
-            // A-B loop functionality
-            const toggleABBtn = document.getElementById('toggleABBtn');
-            toggleABBtn.addEventListener('click', () => {
-                const isABActive = toggleABBtn.textContent.includes('ON');
-                toggleABBtn.innerHTML = isABActive ? 
-                    '<i class="fas fa-repeat"></i> A-B: OFF' : 
-                    '<i class="fas fa-repeat"></i> A-B: ON';
-                showToast(isABActive ? 'A-B loop disabled' : 'A-B loop enabled');
-            });
+          <div class="seek">
+            <span id="tCur">00:00</span>
+            <input id="seek" type="range" min="0" max="1000" value="0"/>
+            <span id="tDur">00:00</span>
+          </div>
 
-            // Bookmark functionality
-            const addBookmarkBtn = document.getElementById('addBookmarkBtn');
-            addBookmarkBtn.addEventListener('click', () => {
-                const time = currentTime.textContent;
-                const bookmark = document.createElement('span');
-                bookmark.className = 'bookmark';
-                bookmark.textContent = time;
-                
-                document.getElementById('bookmarksContainer').appendChild(bookmark);
-                document.getElementById('sidebarBookmarks').appendChild(bookmark.cloneNode(true));
-                
-                showToast(`Bookmark added at ${time}`);
-            });
+          <div class="sliders">
+            <label class="slider"><span>Volume</span><input id="vol" type="range" min="0" max="100" value="85"/></label>
+            <label class="slider"><span>Ducking</span><input id="duck" type="range" min="20" max="100" value="35"/></label>
+          </div>
 
-            // Toast notification function
-            function showToast(message) {
-                const toast = document.getElementById('toast');
-                toast.textContent = message;
-                toast.classList.add('show');
-                
-                setTimeout(() => {
-                    toast.classList.remove('show');
-                }, 3000);
-            }
+          <div class="controls">
+            <div class="btn-group">
+              <button id="setA" class="btn good">Set A</button>
+              <button id="setB" class="btn good">Set B</button>
+              <button id="toggleAB" class="btn warn">A–B: OFF</button>
+              <button id="addMark" class="btn ghost">+ Bookmark</button>
+            </div>
+            <div class="btn-group">
+              <label><input id="repeat" type="checkbox"/> Repeat</label>
+              <label><input id="shuffle" type="checkbox" checked/> Shuffle</label>
+              <span id="status" class="status">Loading…</span>
+              <span id="micPill" class="pill">mic: off</span>
+            </div>
+          </div>
 
-            // Simulate visualization
-            const canvas = document.getElementById('visualization');
-            const ctx = canvas.getContext('2d');
-            
-            function drawVisualization() {
-                const width = canvas.width;
-                const height = canvas.height;
-                
-                ctx.clearRect(0, 0, width, height);
-                
-                // Draw a simple audio visualization
-                const barCount = 32;
-                const barWidth = width / barCount;
-                
-                for (let i = 0; i < barCount; i++) {
-                    const height = Math.random() * canvas.height;
-                    const x = i * barWidth;
-                    
-                    ctx.fillStyle = `hsl(${220 + i * 2}, 80%, 60%)`;
-                    ctx.fillRect(x, canvas.height - height, barWidth - 2, height);
-                }
-                
-                if (isPlaying) {
-                    requestAnimationFrame(drawVisualization);
-                }
-            }
-            
-            // Start visualization when playing
-            playBtn.addEventListener('click', () => {
-                if (isPlaying) {
-                    drawVisualization();
-                }
-            });
-            
-            // Initialize with some bookmarks
-            showToast('Welcome to Aurora Voice Player!');
-        });
-    </script>
+          <!-- Mini (mobile) -->
+          <div class="mini row" style="justify-content:space-between;margin-top:12px">
+            <div class="row" style="gap:10px">
+              <strong class="truncate" id="miniTitle" style="max-width:320px">—</strong>
+              <span class="status" id="miniSub">—</span>
+            </div>
+            <div class="row">
+              <button id="miniPrev" class="btn icon">⏮️</button>
+              <button id="miniPlay" class="btn primary">Play</button>
+              <button id="miniNext" class="btn icon">⏭️</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- RIGHT: Panels -->
+        <aside class="sidebar">
+          <div class="side-card">
+            <h3 class="side-h">Queue & Playlist</h3>
+            <div class="tools">
+              <button id="addYT" class="btn">📺 Add YouTube</button>
+              <label><input id="addLocal" type="file" accept="audio/*,video/*" multiple style="display:none"/><span class="btn">🎵 Add Local</span></label>
+              <button id="saveList" class="btn">💾 Save</button>
+              <button id="clearList" class="btn warn">🧹 Clear</button>
+            </div>
+            <ul id="list" class="playlist" aria-label="Playlist (drag to reorder)"></ul>
+          </div>
+
+          <div class="side-card">
+            <h3 class="side-h">Bookmarks & Chapters</h3>
+            <div id="marksList" class="marks"></div>
+          </div>
+
+          <div class="side-card">
+            <h3 class="side-h">Shortcuts</h3>
+            <div class="fx-grid">
+              <div><strong>Space</strong><br/><span class="status">Play / Pause</span></div>
+              <div><strong>→ / ←</strong><br/><span class="status">Seek ±5s</span></div>
+              <div><strong>Shift+→ / ←</strong><br/><span class="status">Next / Prev</span></div>
+              <div><strong>S</strong><br/><span class="status">Set A</span></div>
+              <div><strong>D</strong><br/><span class="status">Set B</span></div>
+              <div><strong>F</strong><br/><span class="status">Toggle A–B</span></div>
+            </div>
+          </div>
+
+          <div class="side-card">
+            <h3 class="side-h">Audio FX</h3>
+            <div class="tools">
+              <button class="btn ghost" data-eq="flat">Flat</button>
+              <button class="btn ghost" data-eq="bass">Bass Boost</button>
+              <button class="btn ghost" data-eq="vocal">Vocal Boost</button>
+            </div>
+            <p class="status">FX applies to <strong>local files</strong> only.</p>
+          </div>
+        </aside>
+      </div>
+    </section>
+  </main>
+
+  <div id="toast" class="toast"></div>
+
+  <script src="assets/app.js"></script>
 </body>
 </html>
