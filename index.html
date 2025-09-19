@@ -13,14 +13,12 @@
   *{box-sizing:border-box}
   body{margin:0;background:var(--bg);color:var(--text);
        font-family:Inter, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Arial, sans-serif}
-  /* NAV */
   .nav{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;color:#fff;
        background:linear-gradient(90deg,var(--primary2),var(--primary));box-shadow:0 12px 32px rgba(22,28,45,.18)}
   .brand{display:flex;gap:.6rem;align-items:center;font-weight:800}
   .nav-right{display:flex;gap:12px;align-items:center}
   .chip{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.35);color:#fff;padding:6px 10px;border-radius:999px;font-weight:700}
 
-  /* LAYOUT */
   .container{max-width:1280px;margin:22px auto;padding:0 14px}
   .grid-main{display:grid;grid-template-columns:2fr 1fr;gap:18px}
   @media (max-width:1100px){.grid-main{grid-template-columns:1fr}}
@@ -33,7 +31,6 @@
   .hidden{display:none!important}
   .truncate{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
-  /* LEFT: now-playing */
   .now{padding:16px}
   .player-shell{border:1px solid var(--border);border-radius:18px;background:linear-gradient(180deg,#0b1020 0,#101425 100%);padding:10px}
   .player-wrap{position:relative;width:100%;aspect-ratio:16/9;border-radius:12px;overflow:hidden;background:#0b1020;min-height:460px}
@@ -60,12 +57,10 @@
   .seek{display:grid;grid-template-columns:60px 1fr 60px;gap:10px;align-items:center;margin-top:8px}
   .sliders{display:flex;gap:18px;flex-wrap:wrap;margin-top:8px}
   .slider{display:grid;gap:6px;min-width:220px}
-  .toggles{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-top:10px}
   .status{color:var(--muted)}
   .pill{background:#fee2e2;color:#7f1d1d;padding:3px 12px;border-radius:999px;font-weight:800}
   .pill.on{background:#dcfce7;color:#14532d}
 
-  /* RIGHT: side panels */
   .sidebar{display:grid;gap:18px}
   .side-card{padding:14px;border:1px solid var(--border);border-radius:16px;background:#fafbff}
   .side-h{font-weight:800;margin:0 0 10px 0}
@@ -82,20 +77,13 @@
   .marks{display:flex;gap:6px;flex-wrap:wrap}
   .mark{background:#e0f2fe;color:#075985;border:1px solid #bae6fd;border-radius:999px;padding:4px 8px;cursor:pointer;font-weight:700}
 
-  /* FX */
-  .fx-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-  .fx-note{color:var(--muted);font-size:.9rem}
-
-  /* MINI BAR */
   .mini{position:sticky;bottom:-1px;background:#eef2ff;border-top:1px solid var(--border);padding:10px;border-radius:0 0 20px 20px}
   .mini .truncate{max-width:300px}
-  @media (min-width:1000px){ .mini{display:none} } /* hide mini on desktop */
+  @media (min-width:1000px){ .mini{display:none} }
 
-  /* OVERLAY DIM */
   .overlay-dim{position:fixed;inset:0;background:rgba(8,11,23,.65);backdrop-filter:blur(1px);opacity:0;pointer-events:none;transition:.2s}
   .theater .overlay-dim{opacity:1;pointer-events:auto}
 
-  /* TOAST */
   .toast{position:fixed;right:16px;bottom:16px;background:#111827;color:#fff;padding:10px 14px;border-radius:12px;
          box-shadow:0 12px 30px rgba(0,0,0,.25);opacity:0;transform:translateY(10px);transition:.25s}
   .toast.show{opacity:1;transform:translateY(0)}
@@ -107,14 +95,8 @@
   <nav class="nav">
     <div class="brand"><span>🎧</span><span>Aurora Voice Player</span></div>
     <div class="nav-right">
-      <label class="row" style="gap:8px">
-        <input id="speechToggle" type="checkbox" />
-        <span>Speech input</span>
-      </label>
-      <label class="row" style="gap:8px">
-        <input id="micToggle" type="checkbox" />
-        <span>Mic ducking</span>
-      </label>
+      <label class="row" style="gap:8px"><input id="speechToggle" type="checkbox" /><span>Speech input</span></label>
+      <label class="row" style="gap:8px"><input id="micToggle" type="checkbox" /><span>Mic ducking</span></label>
       <button id="install" class="chip">Install</button>
     </div>
   </nav>
@@ -127,10 +109,10 @@
       </div>
 
       <div class="grid-main">
-        <!-- LEFT: Now Playing -->
+        <!-- LEFT -->
         <div class="now">
           <div class="player-shell">
-            <div class="player-wrap" id="playerWrap" aria-label="Player">
+            <div class="player-wrap" id="playerWrap">
               <div id="ytMount" class="hidden"></div>
               <video id="localVideo" class="hidden" playsinline></video>
               <img id="cover" class="cover" src="https://dummyimage.com/1280x720/0b1020/ffffff&text=Ready" alt="Cover"/>
@@ -142,7 +124,6 @@
           <div class="title truncate" id="trackTitle">—</div>
           <div class="sub" id="trackSub">—</div>
 
-          <!-- Top controls -->
           <div class="controls">
             <div class="btn-group">
               <button id="prev" class="btn icon" title="Shift+Left">⏮️</button>
@@ -151,7 +132,6 @@
               <button id="fwd"  class="btn icon" title="Right (+30s)">⏩</button>
               <button id="next" class="btn icon" title="Shift+Right">⏭️</button>
             </div>
-
             <div class="btn-group">
               <select id="rate" class="btn ghost" title="Playback speed">
                 <option value="0.5">0.5×</option><option value="0.75">0.75×</option>
@@ -159,19 +139,16 @@
                 <option value="1.25">1.25×</option><option value="1.5">1.5×</option>
                 <option value="1.75">1.75×</option><option value="2">2.0×</option>
               </select>
-
               <select id="sleep" class="btn ghost" title="Sleep timer">
                 <option value="0">Sleep: off</option>
                 <option value="5">5 min</option><option value="15">15 min</option>
                 <option value="30">30 min</option><option value="60">60 min</option>
               </select>
-
               <button id="theater" class="btn ghost" title="Theater mode">Theater</button>
               <button id="share" class="btn ghost" title="Copy timestamp link">Share ⏱️</button>
             </div>
           </div>
 
-          <!-- Seek + sliders -->
           <div class="seek">
             <span id="tCur">00:00</span>
             <input id="seek" type="range" min="0" max="1000" value="0"/>
@@ -183,7 +160,6 @@
             <label class="slider"><span>Ducking</span><input id="duck" type="range" min="20" max="100" value="35"/></label>
           </div>
 
-          <!-- A–B + bookmarks -->
           <div class="controls">
             <div class="btn-group">
               <button id="setA" class="btn good">Set A</button>
@@ -199,7 +175,6 @@
             </div>
           </div>
 
-          <!-- Mini footer (hidden on desktop) -->
           <div class="mini row" style="justify-content:space-between;margin-top:12px">
             <div class="row" style="gap:10px">
               <strong class="truncate" id="miniTitle" style="max-width:320px">—</strong>
@@ -213,9 +188,8 @@
           </div>
         </div>
 
-        <!-- RIGHT: Panels -->
+        <!-- RIGHT -->
         <aside class="sidebar">
-          <!-- Queue / Playlist -->
           <div class="side-card">
             <h3 class="side-h">Queue & Playlist</h3>
             <div class="tools">
@@ -227,13 +201,11 @@
             <ul id="list" class="playlist" aria-label="Playlist (drag to reorder)"></ul>
           </div>
 
-          <!-- Chapters -->
           <div class="side-card">
             <h3 class="side-h">Bookmarks & Chapters</h3>
             <div id="marksList" class="marks"></div>
           </div>
 
-          <!-- Shortcuts -->
           <div class="side-card">
             <h3 class="side-h">Shortcuts</h3>
             <div class="fx-grid">
@@ -246,7 +218,6 @@
             </div>
           </div>
 
-          <!-- Audio FX -->
           <div class="side-card">
             <h3 class="side-h">Audio FX</h3>
             <div class="tools">
@@ -254,7 +225,7 @@
               <button class="btn ghost" data-eq="bass">Bass Boost</button>
               <button class="btn ghost" data-eq="vocal">Vocal Boost</button>
             </div>
-            <p class="fx-note">FX applies to <strong>local files</strong> only (YouTube audio can’t be processed in the browser).</p>
+            <p class="status">FX applies to <strong>local files</strong> only.</p>
           </div>
         </aside>
       </div>
@@ -264,15 +235,16 @@
   <div id="toast" class="toast"></div>
 
 <script>
-/* ========= Helpers ========= */
+/* ---------- helpers ---------- */
 const $ = s => document.querySelector(s);
-const fmt = s => { s=Math.max(0,Math.floor(s)); const m=String(Math.floor(s/60)).padStart(2,'0'); const ss=String(s%60).padStart(2,'0'); return m+':'+ss };
+const fmt = s => { s=Math.max(0,Math.floor(s)); const m=String(Math.floor(s/60)).padStart(2,'0'); const ss=String(s%60).padStart(2,'0'); return m+':'+ss; };
 function toast(msg){const t=$('#toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),1300);}
 
-/* ========= State ========= */
+/* ---------- state ---------- */
 const SEEK_STEP=30, MIC_THRESHOLD=0.025, QUIET_DELAY=1000, DUCK_TICK=60, VIZ_BARS=72;
 let state={
-  playlist:[], index:0, isPlaying:false, useYT:false, useLocalVideo:false,
+  playlist:[], index:0, isPlaying:false,
+  useYT:false, useLocalVideo:false,
   repeat:false, shuffle:true, duration:0,
   lastSpeech:0, duckAmt:.35, vol:.9,
   speechOn:false, micOn:false, rate:1.0,
@@ -280,9 +252,9 @@ let state={
   queue:[], firstAutoplayDone:false
 };
 
-/* ========= DOM ========= */
+/* ---------- dom ---------- */
 const els={
-  wrap:$('#playerWrap'), ytMount:$('#ytMount'), cover:$('#cover'), viz:$('#viz'), localVideo:$('#localVideo'), unmute:$('#unmute'),
+  ytMount:$('#ytMount'), cover:$('#cover'), viz:$('#viz'), localVideo:$('#localVideo'), unmute:$('#unmute'),
   title:$('#trackTitle'), sub:$('#trackSub'), status:$('#status'),
   prev:$('#prev'), rew:$('#rew'), play:$('#play'), fwd:$('#fwd'), next:$('#next'),
   miniPrev:$('#miniPrev'), miniPlay:$('#miniPlay'), miniNext:$('#miniNext'),
@@ -293,21 +265,18 @@ const els={
   saveList:$('#saveList'), clearList:$('#clearList'),
   speechToggle:$('#speechToggle'), micToggle:$('#micToggle'), micPill:$('#micPill'),
   share:$('#share'), rate:$('#rate'), sleep:$('#sleep'), theater:$('#theater'),
-  marks:$('#marks')
+  marks:$('#marks'), marksList:$('#marksList')
 };
 function setStatus(msg,kind='info'){els.status.textContent=msg; els.status.style.color=(kind==='error')?'var(--danger)':'var(--muted)'}
-function updatePlayBtns(){ els.play.textContent = state.isPlaying ? 'Pause':'Play'; els.miniPlay.textContent = state.isPlaying ? 'Pause':'Play'; }
+function updatePlayBtns(){ const t=state.isPlaying?'Pause':'Play'; els.play.textContent=t; els.miniPlay.textContent=t; }
 function setMeta({title,sub,cover}){ els.title.textContent=title||'—'; els.sub.textContent=sub||'—'; if(cover) els.cover.src=cover; els.miniTitle.textContent=title||'—'; els.miniSub.textContent=sub||'—'; }
 
-/* ========= Local audio + WebAudio + FX ========= */
+/* ---------- audio graph for local media ---------- */
 const audioEl=new Audio(); audioEl.crossOrigin='anonymous'; audioEl.playsInline=true; audioEl.preload='auto';
-
 const actx=new (window.AudioContext||window.webkitAudioContext)();
-let currentSrc=null; // the MediaElementSource node currently connected
-
+let currentSrc=null;
 const gain=actx.createGain(); gain.gain.value=state.vol;
 const analyser=actx.createAnalyser(); analyser.fftSize=2048; analyser.smoothingTimeConstant=.85;
-/* EQ nodes for FX (local-only) */
 const bass=actx.createBiquadFilter(); bass.type="lowshelf"; bass.frequency.value=180;
 const mid=actx.createBiquadFilter();  mid.type="peaking";  mid.frequency.value=1000; mid.Q.value=1.0;
 const tre=actx.createBiquadFilter();  tre.type="highshelf"; tre.frequency.value=4200;
@@ -317,11 +286,7 @@ function attachMedia(el){
   try{
     currentSrc = actx.createMediaElementSource(el);
     currentSrc.connect(bass).connect(mid).connect(tre).connect(gain).connect(analyser).connect(actx.destination);
-  }catch(e){
-    // If a source was already created for this element in the past, reuse graph by just connecting downstream
-    // (createMediaElementSource can only be called once per element)
-    // In that case the previous node is still connected; do nothing.
-  }
+  }catch(e){ /* element already has a source node; ignore */ }
 }
 
 function setEQ(mode){
@@ -332,7 +297,7 @@ function setEQ(mode){
 }
 document.querySelectorAll('[data-eq]').forEach(b=>b.addEventListener('click',()=>setEQ(b.dataset.eq)));
 
-/* Visualization (hidden for YouTube automatically) */
+/* viz (hidden for YouTube) */
 (function(){
   const g = els.viz.getContext('2d');
   const resize=()=>{ const r=els.viz.getBoundingClientRect(); els.viz.width=r.width|0; els.viz.height=96; };
@@ -350,7 +315,7 @@ document.querySelectorAll('[data-eq]').forEach(b=>b.addEventListener('click',()=
   })();
 })();
 
-/* ========= YouTube (visible, controls hidden) ========= */
+/* ---------- YouTube ---------- */
 let ytPlayer=null, ytApiP=null, ytReadyP=null;
 function loadYTAPI(){
   if(window.YT && window.YT.Player) return Promise.resolve();
@@ -382,11 +347,16 @@ function createYT(){
   return ytReadyP;
 }
 async function ensureYT(){
-  await loadYTAPI(); els.ytMount.classList.remove('hidden'); els.cover.classList.add('hidden'); els.localVideo.classList.add('hidden'); await createYT(); return true;
+  await loadYTAPI();
+  els.ytMount.classList.remove('hidden');
+  els.localVideo.classList.add('hidden');
+  els.cover.classList.add('hidden');
+  await createYT();
+  return true;
 }
 function ytId(url){ try{ const u=new URL(url); if(u.hostname.includes('youtu.be')) return u.pathname.slice(1); return u.searchParams.get('v'); }catch{return null} }
 
-/* ========= Playlist & Queue ========= */
+/* ---------- playlist ---------- */
 const DEFAULT=[
   {type:'yt', url:'https://www.youtube.com/watch?v=AJtDXIazrMo', title:'APT. — ROSÉ & Bruno Mars'},
   {type:'yt', url:'https://www.youtube.com/watch?v=BSJa1UytM8w', title:'Saiyaara — Faheem Abdullah'},
@@ -431,18 +401,20 @@ function renderList(){
   });
 }
 
-/* ========= Bookmarks UI ========= */
+/* ---------- bookmarks UI (guarded) ---------- */
 function renderMarksUI(){
   const it=state.playlist[state.index]; if(!it) return;
   const marks=getMarks(it);
-  els.marks.innerHTML=''; const side=document.querySelector('#marksList'); side.innerHTML='';
+  if(els.marks){ els.marks.innerHTML=''; }
+  if(els.marksList){ els.marksList.innerHTML=''; }
   marks.forEach(m=>{
     const btn=document.createElement('button'); btn.className='mark'; btn.textContent=(m.label||'◆')+' '+fmt(m.t); btn.onclick=()=>seekTo(m.t,true);
-    els.marks.appendChild(btn); side.appendChild(btn.cloneNode(true));
+    if(els.marks) els.marks.appendChild(btn);
+    if(els.marksList) els.marksList.appendChild(btn.cloneNode(true));
   });
 }
 
-/* ========= Title helper for YouTube (oEmbed) ========= */
+/* ---------- YouTube title (oEmbed) ---------- */
 async function resolveTitle(url){
   try{
     const resp = await fetch('https://noembed.com/embed?url='+encodeURIComponent(url));
@@ -457,12 +429,21 @@ async function resolveTitle(url){
   }
 }
 
-/* ========= Load current ========= */
-async function loadCurrent(autoplay=false){
-  const it=state.playlist[state.index]; if(!it) return;
+/* ---------- stop everything before switching ---------- */
+function stopAllMedia(){
+  try{ audioEl.pause(); audioEl.currentTime=audioEl.currentTime; }catch{}
+  try{ els.localVideo.pause(); els.localVideo.currentTime=els.localVideo.currentTime; }catch{}
+  try{ if(ytPlayer){ ytPlayer.stopVideo(); } }catch{}
+  state.isPlaying=false; updatePlayBtns();
+}
 
-  // reset A-B
-  state.A=state.B=null; state.loopAB=false; document.getElementById('toggleAB').textContent='A–B: OFF';
+/* ---------- load current item ---------- */
+async function loadCurrent(autoplay=false){
+  stopAllMedia(); // ensure nothing overlaps
+  const it=state.playlist[state.index]; if(!it){ setStatus('Empty playlist'); return; }
+
+  // reset A–B
+  state.A=state.B=null; state.loopAB=false; $('#toggleAB').textContent='A–B: OFF';
 
   state.useYT = (it.type==='yt');
   state.useLocalVideo = (it.type==='local-video');
@@ -476,19 +457,14 @@ async function loadCurrent(autoplay=false){
     setMeta({title:it.title || 'YouTube', sub:'YouTube', cover:`https://i.ytimg.com/vi/${id}/hqdefault.jpg`});
     state.duration=0; els.tDur.textContent='—:—';
     applyRate();
-
-    // Autoplay muted on first load / after add
-    if(autoplay || !state.firstAutoplayDone){
-      try{ ytPlayer.mute(); ytPlayer.playVideo(); state.firstAutoplayDone=true; }catch{}
-    }
+    if(autoplay || !state.firstAutoplayDone){ try{ ytPlayer.mute(); ytPlayer.playVideo(); state.firstAutoplayDone=true; }catch{} }
   } else if(state.useLocalVideo){
     els.localVideo.classList.remove('hidden'); els.ytMount.classList.add('hidden'); els.cover.classList.add('hidden');
-    els.localVideo.src = it.url; els.localVideo.muted = true; // policy-friendly first frame
+    els.localVideo.src = it.url; els.localVideo.muted = true;
     attachMedia(els.localVideo);
-    try{ await els.localVideo.play(); }catch{}
-    els.localVideo.pause();
-    state.duration=isFinite(els.localVideo.duration)?els.localVideo.duration:0;
+    try{ await els.localVideo.play(); }catch{} els.localVideo.pause();
     setMeta({title:it.title || 'Local Video', sub:'Local Video'});
+    state.duration=isFinite(els.localVideo.duration)?els.localVideo.duration:0;
     els.tDur.textContent=fmt(state.duration||0);
     els.localVideo.playbackRate = state.rate;
     if(autoplay){ play(); }
@@ -499,8 +475,8 @@ async function loadCurrent(autoplay=false){
     attachMedia(audioEl);
     try{ await audioEl.play(); }catch{} audioEl.pause();
     audioEl.muted=false;
-    state.duration=isFinite(audioEl.duration)?audioEl.duration:0;
     setMeta({title:it.title || 'Local Audio', sub:'Local File'});
+    state.duration=isFinite(audioEl.duration)?audioEl.duration:0;
     els.tDur.textContent=fmt(state.duration||0);
     audioEl.playbackRate = state.rate;
     if(autoplay){ play(); }
@@ -508,7 +484,7 @@ async function loadCurrent(autoplay=false){
   renderMarksUI(); updatePlayBtns(); updateProgress(); saveStore(); setStatus('Ready.');
 }
 
-/* ========= Transport + crossfade ========= */
+/* ---------- transport ---------- */
 let fading=false;
 function crossfade(nextFn){
   if(fading) return nextFn();
@@ -538,7 +514,7 @@ function next(auto=false){
   crossfade(()=>{
     if(state.queue.length){ state.index=state.queue.shift(); return loadCurrent(true); }
     if(state.shuffle && !auto){ state.index=Math.floor(Math.random()*state.playlist.length); }
-    else if(state.repeat && auto){ /* repeat current */ }
+    else if(state.repeat && auto){ /* repeat */ }
     else { state.index=(state.index+1)%state.playlist.length; }
     loadCurrent(true);
   });
@@ -563,7 +539,7 @@ function seekTo(s, user){
 function seekBy(d){ const cur=getTime(); seekTo(Math.max(0,Math.min(getDur()||0,cur+d)), true); }
 function restart(){ seekTo(0,true); }
 
-/* ========= Progress / A–B ========= */
+/* ---------- progress / A–B ---------- */
 function updateProgress(){
   const pos=getTime(), dur=getDur();
   els.tCur.textContent=fmt(pos); els.tDur.textContent=dur?fmt(dur):'—:—';
@@ -573,7 +549,7 @@ function updateProgress(){
 }
 els.seek.addEventListener('input',()=>seekTo(+els.seek.value/1000,true));
 
-/* ========= Rate / Sleep / Theater ========= */
+/* ---------- rate / sleep / theater ---------- */
 function applyRate(){
   if(state.useYT&&ytPlayer?.setPlaybackRate) ytPlayer.setPlaybackRate(state.rate);
   else if(state.useLocalVideo) els.localVideo.playbackRate = state.rate;
@@ -588,13 +564,13 @@ els.sleep.addEventListener('change',e=>{
 });
 els.theater.addEventListener('click',()=>{ const on=!document.body.classList.contains('theater'); document.body.classList.toggle('theater', on); toast(on?'Theater ON':'Theater OFF'); });
 
-/* ========= Ducking ========= */
+/* ---------- ducking ---------- */
 let duckFactor=1;
 function applyDuck(f){ duckFactor=f; if(state.useYT&&ytPlayer) ytPlayer.setVolume(Math.round(state.vol*100*f)); gain.gain.value=state.vol*f; }
 els.vol.addEventListener('input',()=>{ state.vol=+els.vol.value/100; if(state.useYT&&ytPlayer) ytPlayer.setVolume(Math.round(state.vol*100)); gain.gain.value=state.vol*duckFactor; });
 els.duck.addEventListener('input',()=>{ state.duckAmt=+els.duck.value/100; });
 
-/* ========= Mic (toggle) ========= */
+/* ---------- mic (toggle) ---------- */
 let micCtx=null, micAnalyser=null, micLoop=null;
 async function startMic(){
   try{
@@ -616,7 +592,7 @@ async function startMic(){
 function stopMic(){ try{ if(micLoop) clearInterval(micLoop); if(micCtx) micCtx.close(); }catch{} els.micPill.textContent='mic: off'; els.micPill.classList.remove('on'); state.micOn=false; toast('Mic disabled'); }
 els.micToggle.addEventListener('change',e=>{ e.target.checked? startMic() : stopMic(); });
 
-/* ========= Speech Recognition (toggle) ========= */
+/* ---------- speech (toggle) ---------- */
 let rec=null; const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
 function startSpeech(){
   if(!SR){ setStatus('SpeechRecognition unsupported','error'); els.speechToggle.checked=false; return; }
@@ -628,7 +604,6 @@ function startSpeech(){
 }
 function stopSpeech(){ if(rec){ try{rec.onend=null;rec.onerror=null;rec.stop();}catch{} } toast('Speech OFF'); setStatus('Speech input OFF'); }
 els.speechToggle.addEventListener('change',e=>{ state.speechOn=e.target.checked; state.speechOn? startSpeech(): stopSpeech(); });
-
 function handleCmd(t){
   if(/next/.test(t)) return next();
   if(/prev|previous|back/.test(t)) return prev();
@@ -639,7 +614,7 @@ function handleCmd(t){
   if(/play|resume|continue/.test(t)) return play();
 }
 
-/* ========= UI Controls ========= */
+/* ---------- UI events ---------- */
 els.play.addEventListener('click',()=>state.isPlaying?pause():play());
 els.miniPlay.addEventListener('click',()=>state.isPlaying?pause():play());
 els.prev.addEventListener('click',prev); els.miniPrev.addEventListener('click',prev);
@@ -661,7 +636,7 @@ els.unmute.addEventListener('click',()=>{
   if(!state.useYT){ audioEl.muted=false; els.localVideo.muted=false; els.unmute.classList.add('hidden'); }
 });
 
-/* ========= Add / Save / Clear ========= */
+/* ---------- add/save/clear ---------- */
 els.addYT.addEventListener('click',async ()=>{
   const url=prompt('Paste YouTube URL:'); if(!url) return;
   let title = await resolveTitle(url); if(!title){ const id=ytId(url)||''; title = 'YouTube • '+id.slice(0,8); }
@@ -682,7 +657,7 @@ els.addLocal.addEventListener('change',e=>{
 els.saveList.addEventListener('click',()=>{ saveStore(); toast('Playlist saved'); });
 els.clearList.addEventListener('click',()=>{ if(!confirm('Clear playlist?')) return; state.playlist.length=0; saveStore(); renderList(); toast('Cleared'); });
 
-/* ========= Share timestamp ========= */
+/* ---------- share ---------- */
 els.share.addEventListener('click',()=>{
   const it=state.playlist[state.index]; if(!it) return;
   let url=it.url;
@@ -690,13 +665,13 @@ els.share.addEventListener('click',()=>{
   (navigator.clipboard?.writeText(url)||Promise.reject()).then(()=>toast('Copied'),()=>toast('Copy failed'));
 });
 
-/* ========= Boot ========= */
+/* ---------- boot ---------- */
 function boot(){ loadStore(); renderList(); loadCurrent(true);
   els.vol.value=Math.round(state.vol*100); els.duck.value=Math.round(state.duckAmt*100); updatePlayBtns();
 }
 boot();
 
-/* ========= Media Session ========= */
+/* ---------- media session ---------- */
 if('mediaSession' in navigator){
   navigator.mediaSession.setActionHandler('play', play);
   navigator.mediaSession.setActionHandler('pause', pause);
