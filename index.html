@@ -6,65 +6,90 @@
 <title>Aurora Voice Player</title>
 <style>
   :root{
-    --bg:#f4f6fb; --panel:#ffffff; --text:#0f172a; --muted:#64748b; --border:#e5e7eb;
-    --primary:#1f4cf0; --primary-2:#5b8cff; --accent:#00d0b3; --danger:#ef4444;
+    --bg:#f3f6fd; --panel:#ffffff; --text:#0f1a2b; --muted:#6b7280; --border:#e5e7eb;
+    --primary:#3b82f6; --primary2:#6366f1; --accent:#10b981; --warn:#f59e0b; --danger:#ef4444;
+    --chip:#eef2ff; --chipText:#1e3a8a;
   }
   *{box-sizing:border-box}
   body{margin:0;background:var(--bg);color:var(--text);
        font-family:Inter, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Arial, sans-serif}
-  .nav{display:flex;justify-content:space-between;align-items:center;
-       padding:10px 14px;color:#fff;
-       background:linear-gradient(90deg,var(--primary),#2d3f8d); box-shadow:0 8px 24px rgba(0,0,0,.12)}
+  /* NAV */
+  .nav{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;color:#fff;
+       background:linear-gradient(90deg,var(--primary2),var(--primary));box-shadow:0 12px 32px rgba(22,28,45,.18)}
   .brand{display:flex;gap:.6rem;align-items:center;font-weight:800}
-  .container{max-width:1100px;margin:18px auto;padding:0 12px}
-  .card{background:var(--panel);border:1px solid var(--border);border-radius:18px;
-        box-shadow:0 10px 30px rgba(30,41,59,.08); margin-bottom:18px}
-  .card-h{display:flex;justify-content:space-between;align-items:center;
-          padding:14px 16px;border-bottom:1px solid var(--border)}
-  .badge{background:#e6f0ff;color:#1f3a93;border-radius:999px;padding:4px 10px;font-weight:700;font-size:.8rem}
-  .grid{display:grid;grid-template-columns:1fr 360px;gap:18px;padding:16px}
-  @media (max-width:900px){.grid{grid-template-columns:1fr}}
-  .cover{width:100%;max-width:440px;border-radius:14px;border:1px solid var(--border)}
-  #viz{width:100%;max-width:440px;height:96px;border-radius:10px;background:#eef2ff;border:1px solid var(--border)}
-  .title{font-weight:800;margin-top:6px}
+  .nav-right{display:flex;gap:12px;align-items:center}
+  .chip{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.35);color:#fff;padding:6px 10px;border-radius:999px;font-weight:700}
+  /* LAYOUT */
+  .container{max-width:1200px;margin:22px auto;padding:0 14px}
+  .card{background:var(--panel);border:1px solid var(--border);border-radius:20px;
+        box-shadow:0 12px 36px rgba(30,41,59,.10);margin-bottom:20px}
+  .card-h{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:1px solid var(--border)}
+  .badge{background:#e6f0ff;color:#1f3a93;border-radius:999px;padding:4px 10px;font-weight:800;font-size:.8rem}
+  .grid{display:grid;grid-template-columns:1.2fr .8fr;gap:18px;padding:16px}
+  @media (max-width:1000px){.grid{grid-template-columns:1fr}}
+  .row{display:flex;gap:8px;align-items:center}
+  /* MEDIA AREA */
+  .media-card{padding:14px;border:1px solid var(--border);border-radius:16px;background:#fafbff}
+  .player-wrap{position:relative;width:100%;aspect-ratio:16/9;background:#0b1020;border-radius:14px;overflow:hidden;border:1px solid var(--border)}
+  .hidden{display:none!important}
+  .cover{width:100%;height:100%;object-fit:cover}
+  #viz{width:100%;height:88px;border-radius:10px;background:#eef2ff;border:1px solid var(--border);margin-top:10px}
+  .title{font-weight:800;margin-top:8px}
   .sub{color:var(--muted)}
-  .controls{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;align-items:center}
+  /* CONTROLS */
+  .controls{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
   .btn{border:none;border-radius:999px;font-weight:800;cursor:pointer;padding:8px 14px}
-  .btn.primary{background:linear-gradient(90deg,var(--primary),var(--primary-2));color:#fff}
-  .btn.ghost{background:#eef2ff;color:#1e3a8a}
-  .btn.icon{padding:8px 10px}
+  .btn.primary{background:linear-gradient(90deg,var(--primary),var(--primary2));color:#fff}
+  .btn.icon{padding:8px 10px;background:#eef2ff;color:#1e3a8a}
+  .btn.ghost{background:#eef2ff;color:#1f2a5a}
+  .btn.warn{background:#fff7ed;color:#9a3412;border:1px solid #fed7aa}
   .btn:hover{filter:brightness(.98)}
-  .row{display:grid;grid-template-columns:60px 1fr auto;gap:10px;align-items:center}
   .seek{display:grid;grid-template-columns:60px 1fr 60px;gap:10px;align-items:center;margin-top:8px}
   .sliders{display:flex;gap:18px;flex-wrap:wrap;margin-top:8px}
   .slider{display:grid;gap:6px;min-width:220px}
-  .toggles{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-top:6px}
+  .toggles{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-top:8px}
   .status{color:var(--muted)}
-  .playlist{list-style:none;margin:0;padding:0;border:1px dashed var(--border);border-radius:12px;min-height:140px;background:#fafafa}
+  .pill{background:#fee2e2;color:#7f1d1d;padding:3px 12px;border-radius:999px;font-weight:800}
+  .pill.on{background:#dcfce7;color:#14532d}
+  /* PLAYLIST */
+  .tools{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+  .tools .btn{background:var(--chip);color:var(--chipText)}
+  .playlist{list-style:none;margin:0;padding:0;border:1px dashed var(--border);border-radius:12px;min-height:150px;background:#f8fafc}
   .playlist li{display:grid;grid-template-columns:56px 1fr auto;gap:10px;align-items:center;
                padding:8px 10px;border-bottom:1px solid var(--border);cursor:grab;background:#fff}
   .playlist li:last-child{border-bottom:none}
   .thumb{width:56px;height:42px;border-radius:8px;object-fit:cover;border:1px solid var(--border)}
-  .row-title{font-weight:700}
-  .row-sub{color:var(--muted);font-size:.9rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .row-title{font-weight:800}
+  .row-sub{color:var(--muted);font-size:.9rem}
+  .truncate{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:460px}
   .row-actions{display:flex;gap:6px}
-  .pill{background:#fee2e2;color:#7f1d1d;padding:3px 12px;border-radius:999px;font-weight:700}
-  .hint kbd{background:#0f172a;color:#fff;padding:2px 6px;border-radius:4px;font-size:.85rem}
+  /* TOASTS */
+  .toast{position:fixed;right:16px;bottom:16px;background:#111827;color:#fff;padding:10px 14px;border-radius:12px;
+         box-shadow:0 12px 30px rgba(0,0,0,.25);opacity:0;transform:translateY(10px);transition:.25s}
+  .toast.show{opacity:1;transform:translateY(0)}
+  /* MINI BAR */
+  .mini{position:sticky;bottom:-1px;background:#eef2ff;border-top:1px solid var(--border);padding:10px;border-radius:0 0 20px 20px}
+  .mini .truncate{max-width:300px}
 </style>
 </head>
 <body>
   <nav class="nav">
     <div class="brand"><span>🎧</span><span>Aurora Voice Player</span></div>
-    <div style="display:flex;gap:12px;align-items:center">
-      <label style="display:flex;gap:8px;align-items:center">
+    <div class="nav-right">
+      <label class="row" style="gap:8px">
         <input id="speechToggle" type="checkbox" />
         <span>Speech input</span>
       </label>
-      <button id="install" class="btn" style="background:transparent;border:1px solid rgba(255,255,255,.4);color:#fff">Install</button>
+      <label class="row" style="gap:8px">
+        <input id="micToggle" type="checkbox" />
+        <span>Mic ducking</span>
+      </label>
+      <button id="install" class="chip">Install</button>
     </div>
   </nav>
 
   <main class="container">
+    <!-- MAIN -->
     <section class="card">
       <div class="card-h">
         <h1 style="margin:0;font-size:1.05rem">Voice-Controlled Media Player</h1>
@@ -72,19 +97,26 @@
       </div>
 
       <div class="grid">
-        <div>
-          <img id="cover" class="cover" src="https://dummyimage.com/800x800/f1f5f9/0f172a&text=Artwork" alt="Cover"/>
-          <canvas id="viz"></canvas>
+        <!-- LEFT: media -->
+        <div class="media-card">
+          <div class="player-wrap" id="playerWrap">
+            <!-- YouTube mount -->
+            <div id="ytMount" class="hidden" aria-label="YouTube player"></div>
+            <!-- Local cover + viz -->
+            <img id="cover" class="cover" src="https://dummyimage.com/1280x720/0b1020/ffffff&text=Ready" alt="Cover"/>
+          </div>
+          <canvas id="viz" aria-label="Audio visualization"></canvas>
 
-          <div class="title" id="trackTitle">—</div>
+          <div class="title truncate" id="trackTitle">—</div>
           <div class="sub" id="trackSub">—</div>
 
           <div class="controls">
-            <button id="prev" class="btn ghost icon" title="Shift+Left">⏮️</button>
-            <button id="rew"  class="btn ghost icon" title="Left (–30s)">⏪</button>
-            <button id="play" class="btn primary"     title="Space">Play</button>
-            <button id="fwd"  class="btn ghost icon" title="Right (+30s)">⏩</button>
-            <button id="next" class="btn ghost icon" title="Shift+Right">⏭️</button>
+            <button id="prev" class="btn icon" title="Shift+Left">⏮️</button>
+            <button id="rew"  class="btn icon" title="Left (–30s)">⏪</button>
+            <button id="play" class="btn primary" title="Space">Play</button>
+            <button id="fwd"  class="btn icon" title="Right (+30s)">⏩</button>
+            <button id="next" class="btn icon" title="Shift+Right">⏭️</button>
+            <button id="share" class="btn ghost" title="Copy current link">Share</button>
           </div>
 
           <div class="seek">
@@ -102,65 +134,90 @@
             <label><input id="repeat" type="checkbox"/> Repeat</label>
             <label><input id="shuffle" type="checkbox" checked/> Shuffle</label>
             <span id="status" class="status">Ready.</span>
+            <span id="micPill" class="pill">mic: off</span>
           </div>
 
           <div class="toggles">
-            <select id="voice" style="max-width:280px"></select>
+            <select id="voice" style="max-width:320px"></select>
             <button id="speakEn" class="btn ghost">Speak EN</button>
             <button id="speakUr" class="btn ghost">Speak اردو</button>
-            <button id="stopTTS" class="btn ghost">Stop TTS</button>
-          </div>
-
-          <div class="toggles">
-            <span>Mic:</span><span id="mic" class="pill">off</span>
-            <span class="status hint">Hotkeys: <kbd>Space</kbd> • <kbd>←/→</kbd> seek • <kbd>Shift</kbd>+<kbd>←/→</kbd> prev/next</span>
+            <button id="stopTTS" class="btn warn">Stop TTS</button>
           </div>
         </div>
 
-        <div>
-          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">
-            <button id="addYT" class="btn ghost">📺 Add YouTube</button>
-            <label><input id="addLocal" type="file" accept="audio/*" multiple style="display:none"/>
-              <span class="btn ghost">🎵 Add Local</span></label>
+        <!-- RIGHT: playlist -->
+        <div class="media-card">
+          <div class="tools">
+            <button id="addYT" class="btn">📺 Add YouTube</button>
+            <label><input id="addLocal" type="file" accept="audio/*" multiple style="display:none"/><span class="btn">🎵 Add Local</span></label>
+            <button id="saveList" class="btn">💾 Save</button>
+            <button id="clearList" class="btn warn">🧹 Clear</button>
           </div>
           <ul id="list" class="playlist" aria-label="Playlist (drag to reorder)"></ul>
         </div>
       </div>
+
+      <!-- Sticky miniboard -->
+      <div class="mini row" style="justify-content:space-between">
+        <div class="row" style="gap:10px">
+          <strong class="truncate" id="miniTitle">—</strong>
+          <span class="status" id="miniSub">—</span>
+        </div>
+        <div class="row">
+          <button id="miniPrev" class="btn icon">⏮️</button>
+          <button id="miniPlay" class="btn primary">Play</button>
+          <button id="miniNext" class="btn icon">⏭️</button>
+        </div>
+      </div>
     </section>
 
+    <!-- TIPS -->
     <section class="card">
       <div class="card-h"><h2 style="margin:0;font-size:1rem">Tips</h2></div>
       <div style="padding:14px">
         <ul>
           <li>Hosted on HTTPS (GitHub Pages) → mic & YouTube work properly.</li>
           <li>If YouTube won’t start, click <strong>Play</strong> once (browser policy).</li>
-          <li>Use the <strong>Speech input</strong> switch to enable voice commands (off by default).</li>
+          <li>Use <strong>Speech input</strong> to enable voice commands (off by default).</li>
+          <li><strong>Mic ducking</strong> lowers volume while you speak (toggle to grant permission).</li>
         </ul>
       </div>
     </section>
   </main>
 
+  <div id="toast" class="toast"></div>
+
+<!-- Script -->
 <script>
-/* ===== Small helpers ===== */
+/* ========= UTIL ========= */
+const $ = (s)=>document.querySelector(s);
 const fmt = s => { s=Math.max(0,Math.floor(s)); const m=String(Math.floor(s/60)).padStart(2,'0'); const ss=String(s%60).padStart(2,'0'); return m+':'+ss };
+function toast(msg){const t=$('#toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),1600);}
+
+/* ========= STATE ========= */
 const SEEK_STEP=30, MIC_THRESHOLD=0.025, QUIET_DELAY=1000, DUCK_TICK=60, VIZ_BARS=64;
-let state={playlist:[], index:0, isPlaying:false, useYT:false, repeat:false, shuffle:true, duration:0, lastSpeech:0, duckAmt:.35, vol:.85, ttsIndex:null, speechOn:false};
+let state={playlist:[], index:0, isPlaying:false, useYT:false, repeat:false, shuffle:true, duration:0, lastSpeech:0, duckAmt:.35, vol:.85, ttsIndex:null, speechOn:false, micOn:false};
 
-/* ===== DOM ===== */
+/* ========= DOM ========= */
 const els={
-  cover:$('#cover'), title:$('#trackTitle'), sub:$('#trackSub'),
+  wrap:$('#playerWrap'), ytMount:$('#ytMount'), cover:$('#cover'), viz:$('#viz'),
+  title:$('#trackTitle'), sub:$('#trackSub'), status:$('#status'),
   prev:$('#prev'), rew:$('#rew'), play:$('#play'), fwd:$('#fwd'), next:$('#next'),
-  seek:$('#seek'), tCur:$('#tCur'), tDur:$('#tDur'), vol:$('#vol'), duck:$('#duck'),
-  repeat:$('#repeat'), shuffle:$('#shuffle'), status:$('#status'), list:$('#list'),
-  addYT:$('#addYT'), addLocal:$('#addLocal'), voice:$('#voice'),
-  speakEn:$('#speakEn'), speakUr:$('#speakUr'), stopTTS:$('#stopTTS'),
-  mic:$('#mic'), viz:$('#viz'), speechToggle:$('#speechToggle'), install:$('#install')
+  miniPrev:$('#miniPrev'), miniPlay:$('#miniPlay'), miniNext:$('#miniNext'),
+  miniTitle:$('#miniTitle'), miniSub:$('#miniSub'),
+  seek:$('#seek'), tCur:$('#tCur'), tDur:$('#tDur'),
+  vol:$('#vol'), duck:$('#duck'), repeat:$('#repeat'), shuffle:$('#shuffle'),
+  list:$('#list'), addYT:$('#addYT'), addLocal:$('#addLocal'),
+  saveList:$('#saveList'), clearList:$('#clearList'),
+  speechToggle:$('#speechToggle'), micToggle:$('#micToggle'), micPill:$('#micPill'),
+  voice:$('#voice'), speakEn:$('#speakEn'), speakUr:$('#speakUr'), stopTTS:$('#stopTTS'),
+  share:$('#share'), install:$('#install')
 };
-function $(s){return document.querySelector(s)}
-function setStatus(msg,kind='info'){ els.status.textContent=msg; els.status.style.color = (kind==='error')?'var(--danger)':'var(--muted)'; }
-function updatePlayBtn(){ els.play.textContent = state.isPlaying ? 'Pause' : 'Play'; }
+function setStatus(msg,kind='info'){els.status.textContent=msg; els.status.style.color=(kind==='error')?'var(--danger)':'var(--muted)'}
+function updatePlayBtns(){ els.play.textContent = state.isPlaying ? 'Pause':'Play'; els.miniPlay.textContent = state.isPlaying ? 'Pause':'Play'; }
+function setMeta({title,sub,cover}){ els.title.textContent=title||'—'; els.sub.textContent=sub||'—'; if(cover) els.cover.src=cover; els.miniTitle.textContent=title||'—'; els.miniSub.textContent=sub||'—'; }
 
-/* ===== Local audio + WebAudio ===== */
+/* ========= LOCAL AUDIO + WEBAUDIO ========= */
 const audioEl=new Audio(); audioEl.crossOrigin='anonymous';
 const ctx=new (window.AudioContext||window.webkitAudioContext)();
 const src=ctx.createMediaElementSource(audioEl);
@@ -171,53 +228,47 @@ src.connect(gain).connect(analyser).connect(ctx.destination);
 /* Visualization */
 (function(){
   const g = els.viz.getContext('2d');
-  function loop(){
+  const resize=()=>{ const r=els.viz.getBoundingClientRect(); els.viz.width=r.width|0; els.viz.height=88; };
+  resize(); addEventListener('resize',resize);
+  (function loop(){
     const buf=new Uint8Array(analyser.frequencyBinCount); analyser.getByteFrequencyData(buf);
     g.clearRect(0,0,els.viz.width,els.viz.height);
     const step=Math.floor(buf.length/VIZ_BARS), w=(els.viz.width/VIZ_BARS)-2;
     for(let i=0;i<VIZ_BARS;i++){const v=buf[i*step]/255, h=v*els.viz.height, x=i*(w+2), y=els.viz.height-h;
-      g.fillStyle = i%2 ? '#3b82f6' : '#22d3ee'; g.fillRect(x,y,w,h);}
+      g.fillStyle = i%2 ? '#60a5fa' : '#22d3ee'; g.fillRect(x,y,w,h);}
     requestAnimationFrame(loop);
-  }
-  // ensure canvas size matches CSS
-  els.viz.width = els.viz.getBoundingClientRect().width|0;
-  els.viz.height = 96;
-  loop();
+  })();
 })();
 
-/* ===== YouTube: load + onReady promise + origin fix ===== */
-let ytPlayer=null, ytReadyPromise=null, ytReady=false, playerReadyPromise=null;
+/* ========= YOUTUBE (VISIBLE PLAYER) ========= */
+let ytPlayer=null, ytReadyPromise=null, playerReadyPromise=null;
 function loadYTAPI(){
-  if(window.YT && window.YT.Player) { ytReady=true; return Promise.resolve(); }
+  if(window.YT && window.YT.Player) return Promise.resolve();
   if(ytReadyPromise) return ytReadyPromise;
   ytReadyPromise = new Promise((resolve,reject)=>{
     const s=document.createElement('script');
     s.src='https://www.youtube.com/iframe_api'; s.async=true; s.onerror=()=>reject(new Error('YT API failed'));
-    window.onYouTubeIframeAPIReady=()=>{ ytReady=true; resolve(); };
+    window.onYouTubeIframeAPIReady=()=>resolve();
     document.head.appendChild(s);
   });
   return ytReadyPromise;
 }
-function createPlayerIfNeeded(){
+function createVisiblePlayer(){
   if(ytPlayer) return playerReadyPromise;
   playerReadyPromise = new Promise((resolve)=>{
-    const host=document.createElement('div');
-    host.id='yt-player'; host.style.position='absolute'; host.style.left='-9999px'; host.style.width='0'; host.style.height='0';
-    document.body.appendChild(host);
-    ytPlayer = new YT.Player('yt-player',{
-      videoId:'',
-      width:'0', height:'0',
-      host:'https://www.youtube-nocookie.com',             // cleaner domain
+    ytPlayer = new YT.Player('ytMount',{
+      width:'100%', height:'100%', videoId:'',
+      host:'https://www.youtube-nocookie.com',
       playerVars:{
-        autoplay:0, controls:0, rel:0, modestbranding:1, playsinline:1,
-        origin: window.location.origin                      // IMPORTANT for GitHub Pages
+        autoplay:0, controls:1, rel:0, modestbranding:1, playsinline:1,
+        origin: window.location.origin
       },
       events:{
-        onReady: ()=> resolve(),
-        onStateChange: e=>{
+        onReady: ()=>resolve(),
+        onStateChange:(e)=>{
           if(e.data===YT.PlayerState.ENDED) next(true);
-          if(e.data===YT.PlayerState.PLAYING){ state.isPlaying=true; updatePlayBtn(); }
-          if(e.data===YT.PlayerState.PAUSED){ state.isPlaying=false; updatePlayBtn(); }
+          if(e.data===YT.PlayerState.PLAYING){ state.isPlaying=true; updatePlayBtns(); }
+          if(e.data===YT.PlayerState.PAUSED){ state.isPlaying=false; updatePlayBtns(); }
         }
       }
     });
@@ -225,39 +276,39 @@ function createPlayerIfNeeded(){
   return playerReadyPromise;
 }
 async function ensureYTReady(){
-  try{
-    await loadYTAPI();
-    await createPlayerIfNeeded();     // wait for onReady
-    return true;
-  }catch(e){ setStatus('YouTube API unavailable.', 'error'); return false; }
+  await loadYTAPI();
+  els.ytMount.classList.remove('hidden');        // make it visible
+  els.cover.classList.add('hidden');             // hide cover when YouTube used
+  await createVisiblePlayer();
+  return true;
 }
+function ytId(url){ try{ const u=new URL(url); if(u.hostname.includes('youtu.be')) return u.pathname.slice(1); return u.searchParams.get('v'); }catch{return null} }
 
-/* ===== Playlist ===== */
+/* ========= PLAYLIST ========= */
 const DEFAULT=[
   {type:'yt', url:'https://www.youtube.com/watch?v=AJtDXIazrMo', title:'APT. — ROSÉ & Bruno Mars'},
   {type:'yt', url:'https://www.youtube.com/watch?v=BSJa1UytM8w', title:'Saiyaara — Faheem Abdullah'},
   {type:'yt', url:'https://www.youtube.com/watch?v=m4iPSPoe1Y8', title:'Naina — Arijit Singh'}
 ];
-function loadStore(){ try{ const raw=localStorage.getItem('auroraPlaylist'); state.playlist = raw? JSON.parse(raw): DEFAULT.slice(); }catch{ state.playlist=DEFAULT.slice(); } }
+function loadStore(){ try{ const raw=localStorage.getItem('auroraPlaylist'); state.playlist=raw?JSON.parse(raw):DEFAULT.slice(); }catch{ state.playlist=DEFAULT.slice(); } }
 function saveStore(){ localStorage.setItem('auroraPlaylist', JSON.stringify(state.playlist)); }
-function ytId(url){ try{ const u=new URL(url); if(u.hostname.includes('youtu.be')) return u.pathname.slice(1); return u.searchParams.get('v'); }catch{ return null; } }
-
 function renderList(){
   els.list.innerHTML='';
   state.playlist.forEach((it,i)=>{
     const li=document.createElement('li'); li.draggable=true; li.dataset.i=i;
-    const id=(it.type==='yt')? ytId(it.url): null;
-    const img=document.createElement('img'); img.className='thumb'; img.src=id?`https://i.ytimg.com/vi/${id}/hqdefault.jpg`:'https://dummyimage.com/112x84/ede9fe/3730a3&text=Audio';
+    const id = (it.type==='yt')? ytId(it.url): null;
+    const img=document.createElement('img'); img.className='thumb';
+    img.src=id?`https://i.ytimg.com/vi/${id}/mqdefault.jpg`:'https://dummyimage.com/112x84/ede9fe/3730a3&text=Audio';
     const main=document.createElement('div');
-    const t=document.createElement('div'); t.className='row-title'; t.textContent=it.title || (it.type==='yt'?'YouTube item':'Local file');
-    const sub=document.createElement('div'); sub.className='row-sub'; sub.textContent=it.url; main.appendChild(t); main.appendChild(sub);
+    const t=document.createElement('div'); t.className='row-title truncate'; t.textContent=it.title || (it.type==='yt'?'YouTube item':'Local file');
+    const sub=document.createElement('div'); sub.className='row-sub truncate'; sub.textContent=it.url;
+    main.appendChild(t); main.appendChild(sub);
     const act=document.createElement('div'); act.className='row-actions';
     const b1=document.createElement('button'); b1.className='btn ghost'; b1.textContent='Play'; b1.onclick=()=>{state.index=i; loadCurrent(true)};
-    const b2=document.createElement('button'); b2.className='btn ghost'; b2.textContent='Remove'; b2.onclick=()=>{state.playlist.splice(i,1); saveStore(); renderList(); };
+    const b2=document.createElement('button'); b2.className='btn ghost'; b2.textContent='Remove'; b2.onclick=()=>{state.playlist.splice(i,1); saveStore(); renderList();};
     act.appendChild(b1); act.appendChild(b2);
     li.appendChild(img); li.appendChild(main); li.appendChild(act); els.list.appendChild(li);
   });
-  // drag reorder
   let dragEl=null;
   els.list.querySelectorAll('li').forEach(li=>{
     li.addEventListener('dragstart',e=>{dragEl=li; e.dataTransfer.effectAllowed='move'});
@@ -265,97 +316,105 @@ function renderList(){
     li.addEventListener('drop',e=>{
       e.preventDefault(); if(!dragEl||dragEl===li) return;
       const from=+dragEl.dataset.i, to=+li.dataset.i;
-      const it=state.playlist.splice(from,1)[0]; state.playlist.splice(to,0,it);
-      saveStore(); renderList();
+      const it=state.playlist.splice(from,1)[0]; state.playlist.splice(to,0,it); saveStore(); renderList();
     });
   });
 }
 
-/* ===== Meta + load current ===== */
-function setMeta({title,sub,cover}){ els.title.textContent=title||'—'; els.sub.textContent=sub||'—'; if(cover) els.cover.src=cover; }
+/* ========= LOAD CURRENT ========= */
 async function loadCurrent(autoplay=false){
   const it=state.playlist[state.index]; if(!it) return;
   state.useYT = (it.type==='yt');
-  setMeta({ title: it.title, sub: it.type==='yt'?'YouTube':'Local File' });
-  // Pause both
-  audioEl.pause(); if(ytPlayer) ytPlayer.pauseVideo?.();
 
   if(state.useYT){
-    const ok = await ensureYTReady(); if(!ok) return;
-    const id = ytId(it.url); if(!id){ setStatus('Invalid YouTube URL', 'error'); return; }
-    ytPlayer.cueVideoById(id);                    // safe before play
+    // show YT
+    await ensureYTReady();
+    const id=ytId(it.url); if(!id){ setStatus('Invalid YouTube URL','error'); return; }
+    ytPlayer.cueVideoById(id);
     ytPlayer.setVolume(Math.round(state.vol*100));
-    setMeta({ title: it.title, sub: 'YouTube', cover: `https://i.ytimg.com/vi/${id}/hqdefault.jpg` });
-    state.duration = 0; els.tDur.textContent='—:—';
-    if (autoplay) ytPlayer.playVideo();
+    setMeta({title:it.title, sub:'YouTube', cover:`https://i.ytimg.com/vi/${id}/hqdefault.jpg`});
+    state.duration=0; els.tDur.textContent='—:—';
+    if(autoplay) ytPlayer.playVideo();
   } else {
-    audioEl.src = it.url;
-    await audioEl.play().catch(()=>{});
-    audioEl.pause();
-    state.duration=isFinite(audioEl.duration)? audioEl.duration : 0;
-    els.tDur.textContent = fmt(state.duration||0);
-    if (autoplay) play();
+    // show cover+viz
+    els.cover.classList.remove('hidden'); els.ytMount.classList.add('hidden');
+    audioEl.src=it.url;
+    await audioEl.play().catch(()=>{}); audioEl.pause();
+    state.duration=isFinite(audioEl.duration)?audioEl.duration:0;
+    setMeta({title:it.title, sub:'Local File'});
+    els.tDur.textContent=fmt(state.duration||0);
+    if(autoplay) play();
   }
-  updateProgress(); saveStore();
+  updatePlayBtns(); updateProgress(); saveStore();
 }
 
-/* ===== Transport ===== */
-function play(){ if(state.useYT&&ytPlayer) ytPlayer.playVideo(); else audioEl.play(); state.isPlaying=true; updatePlayBtn(); setStatus('Playing'); if(ctx.state==='suspended') ctx.resume(); }
-function pause(){ if(state.useYT&&ytPlayer) ytPlayer.pauseVideo(); else audioEl.pause(); state.isPlaying=false; updatePlayBtn(); setStatus('Paused'); }
+/* ========= TRANSPORT ========= */
+function play(){ if(state.useYT&&ytPlayer) ytPlayer.playVideo(); else audioEl.play(); state.isPlaying=true; updatePlayBtns(); setStatus('Playing'); if(ctx.state==='suspended') ctx.resume(); }
+function pause(){ if(state.useYT&&ytPlayer) ytPlayer.pauseVideo(); else audioEl.pause(); state.isPlaying=false; updatePlayBtns(); setStatus('Paused'); }
 function next(auto=false){ if(state.shuffle && !auto){ state.index=Math.floor(Math.random()*state.playlist.length) } else if(state.repeat && auto){ } else { state.index=(state.index+1)%state.playlist.length } loadCurrent(true); }
 function prev(){ state.index=(state.index-1+state.playlist.length)%state.playlist.length; loadCurrent(true); }
+function seekBy(d){ const cur=state.useYT&&ytPlayer? ytPlayer.getCurrentTime(): audioEl.currentTime;
+  const target=Math.max(0,Math.min((state.duration||0),cur+d)); if(state.useYT&&ytPlayer) ytPlayer.seekTo(target,true); else audioEl.currentTime=target; }
+function restart(){ if(state.useYT&&ytPlayer) ytPlayer.seekTo(0,true); else audioEl.currentTime=0; }
+function volBy(d){ state.vol=Math.max(0,Math.min(1,state.vol+d)); els.vol.value=Math.round(state.vol*100);
+  if(state.useYT&&ytPlayer) ytPlayer.setVolume(Math.round(state.vol*100)); gain.gain.value=state.vol*duckFactor; }
 
-/* ===== Progress ===== */
+/* ========= PROGRESS ========= */
 function updateProgress(){
   const pos = state.useYT&&ytPlayer? (ytPlayer.getCurrentTime?.()||0) : (audioEl.currentTime||0);
   const dur = state.useYT&&ytPlayer? (ytPlayer.getDuration?.()||state.duration||0) : (isFinite(audioEl.duration)?audioEl.duration:(state.duration||0));
-  els.tCur.textContent = fmt(pos); els.tDur.textContent = dur?fmt(dur):'—:—';
-  els.seek.max = Math.round((dur||1)*1000); els.seek.value = Math.round(pos*1000);
-  state.duration = dur;
+  els.tCur.textContent=fmt(pos); els.tDur.textContent=dur?fmt(dur):'—:—';
+  els.seek.max=Math.round((dur||1)*1000); els.seek.value=Math.round(pos*1000); state.duration=dur;
   requestAnimationFrame(updateProgress);
 }
 els.seek.addEventListener('input',()=>{const s=+els.seek.value/1000; if(state.useYT&&ytPlayer) ytPlayer.seekTo(s,true); else audioEl.currentTime=s});
 
-/* ===== Volume & Ducking ===== */
-let duckFactor=1; function applyDuck(f){duckFactor=f; if(state.useYT&&ytPlayer) ytPlayer.setVolume(Math.round(state.vol*100*f)); gain.gain.value=state.vol*f}
-els.vol.addEventListener('input',()=>{state.vol=+els.vol.value/100; if(state.useYT&&ytPlayer) ytPlayer.setVolume(Math.round(state.vol*100)); gain.gain.value=state.vol*duckFactor});
-els.duck.addEventListener('input',()=>{state.duckAmt=+els.duck.value/100});
+/* ========= DUCKING ========= */
+let duckFactor=1;
+function applyDuck(f){ duckFactor=f; if(state.useYT&&ytPlayer) ytPlayer.setVolume(Math.round(state.vol*100*f)); gain.gain.value=state.vol*f; }
+els.vol.addEventListener('input',()=>{ state.vol=+els.vol.value/100; if(state.useYT&&ytPlayer) ytPlayer.setVolume(Math.round(state.vol*100)); gain.gain.value=state.vol*duckFactor; });
+els.duck.addEventListener('input',()=>{ state.duckAmt=+els.duck.value/100; });
 
-/* Mic ducking (permission once) */
-(async function initMic(){
+/* ========= MIC (toggle; request on click) ========= */
+let micCtx=null, micAnalyser=null, micLoop=null;
+async function startMic(){
   try{
     const stream = await navigator.mediaDevices.getUserMedia({audio:true});
-    els.mic.textContent='on'; els.mic.style.background='#dcfce7'; els.mic.style.color='#14532d';
-    const mctx = new (window.AudioContext||window.webkitAudioContext)();
-    const ms = mctx.createMediaStreamSource(stream);
-    const an = mctx.createAnalyser(); an.fftSize=1024; ms.connect(an);
-    const buf=new Uint8Array(an.fftSize);
-    (function loop(){
-      an.getByteTimeDomainData(buf); let sum=0; for(let i=0;i<buf.length;i++){const v=(buf[i]-128)/128; sum+=v*v}
+    micCtx = new (window.AudioContext||window.webkitAudioContext)();
+    const src = micCtx.createMediaStreamSource(stream);
+    micAnalyser = micCtx.createAnalyser(); micAnalyser.fftSize=1024; src.connect(micAnalyser);
+    els.micPill.textContent='mic: on'; els.micPill.classList.add('on'); state.micOn=true;
+    micLoop = setInterval(()=>{
+      const buf=new Uint8Array(micAnalyser.fftSize); micAnalyser.getByteTimeDomainData(buf);
+      let sum=0; for(let i=0;i<buf.length;i++){const v=(buf[i]-128)/128; sum+=v*v}
       const rms=Math.sqrt(sum/buf.length); if(rms>MIC_THRESHOLD) state.lastSpeech=performance.now();
-      const since = performance.now()-state.lastSpeech;
-      const target = since<QUIET_DELAY ? (1-state.duckAmt) : 1;
+      const since=performance.now()-state.lastSpeech; const target = since<QUIET_DELAY ? (1-state.duckAmt) : 1;
       applyDuck(duckFactor+(target-duckFactor)*0.08);
-      setTimeout(loop, DUCK_TICK);
-    })();
+    }, DUCK_TICK);
+    toast('Mic enabled for ducking');
   }catch(e){
-    els.mic.textContent='off'; els.mic.style.background='#fee2e2'; els.mic.style.color='#7f1d1d';
-    setStatus('Mic blocked — ducking disabled','error');
+    els.micPill.textContent='mic: off'; els.micPill.classList.remove('on'); state.micOn=false; els.micToggle.checked=false;
+    setStatus('Mic permission denied — ducking disabled','error'); toast('Mic permission denied');
   }
-})();
+}
+function stopMic(){
+  try{ if(micLoop) clearInterval(micLoop); if(micCtx) micCtx.close(); }catch{}
+  els.micPill.textContent='mic: off'; els.micPill.classList.remove('on'); state.micOn=false; toast('Mic disabled');
+}
+els.micToggle.addEventListener('change',e=>{ e.target.checked? startMic() : stopMic(); });
 
-/* ===== Speech recognition (toggle, OFF by default) ===== */
+/* ========= SPEECH RECOGNITION (toggle; OFF by default) ========= */
 let rec=null; const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
 function startSpeech(){
   if(!SR){ setStatus('SpeechRecognition not supported','error'); els.speechToggle.checked=false; return; }
   if(rec){ try{rec.stop()}catch{} }
-  rec = new SR(); rec.lang='en-GB'; rec.continuous=true; rec.interimResults=false;
+  rec=new SR(); rec.lang='en-GB'; rec.continuous=true; rec.interimResults=false;
   rec.onresult=(e)=>{ for(let i=e.resultIndex;i<e.results.length;i++){ if(e.results[i].isFinal) handleCmd(e.results[i][0].transcript.toLowerCase()) } };
   rec.onerror=()=>{ if(state.speechOn) setTimeout(()=>{ try{rec.start()}catch{} },700) };
   rec.onend = ()=>{ if(state.speechOn) setTimeout(()=>{ try{rec.start()}catch{} },500) };
-  try{ rec.start(); setStatus('Speech input ON'); }catch{ setStatus('Could not start speech input','error'); }
+  try{ rec.start(); toast('Speech input ON'); setStatus('Speech input ON'); }catch{ setStatus('Could not start speech input','error'); }
 }
-function stopSpeech(){ if(rec){ try{rec.onend=null;rec.onerror=null;rec.stop();}catch{} } setStatus('Speech input OFF'); }
+function stopSpeech(){ if(rec){ try{rec.onend=null;rec.onerror=null;rec.stop();}catch{} } toast('Speech input OFF'); setStatus('Speech input OFF'); }
 els.speechToggle.addEventListener('change',e=>{ state.speechOn=e.target.checked; state.speechOn? startSpeech(): stopSpeech(); });
 
 function handleCmd(t){
@@ -368,14 +427,11 @@ function handleCmd(t){
   if(/play|resume|continue|go on/.test(t)) return play();
   if(/volume up|louder/.test(t)) return volBy(+0.1);
   if(/volume down|quieter/.test(t)) return volBy(-0.1);
-  if(/shuffle/.test(t)){ state.shuffle=!state.shuffle; els.shuffle.checked=state.shuffle; setStatus('Shuffle '+(state.shuffle?'on':'off')) }
-  if(/repeat/.test(t)){ state.repeat=!state.repeat; els.repeat.checked=state.repeat; setStatus('Repeat '+(state.repeat?'on':'off')) }
+  if(/shuffle/.test(t)){ state.shuffle=!state.shuffle; els.shuffle.checked=state.shuffle; toast('Shuffle '+(state.shuffle?'ON':'OFF')) }
+  if(/repeat/.test(t)){ state.repeat=!state.repeat; els.repeat.checked=state.repeat; toast('Repeat '+(state.repeat?'ON':'OFF')) }
 }
-function seekBy(d){ const cur=state.useYT&&ytPlayer? ytPlayer.getCurrentTime(): audioEl.currentTime; const target=Math.max(0,Math.min((state.duration||0),cur+d)); if(state.useYT&&ytPlayer) ytPlayer.seekTo(target,true); else audioEl.currentTime=target; }
-function restart(){ if(state.useYT&&ytPlayer) ytPlayer.seekTo(0,true); else audioEl.currentTime=0; }
-function volBy(d){ state.vol=Math.max(0,Math.min(1,state.vol+d)); els.vol.value=Math.round(state.vol*100); if(state.useYT&&ytPlayer) ytPlayer.setVolume(Math.round(state.vol*100)); gain.gain.value=state.vol*duckFactor; }
 
-/* ===== TTS ===== */
+/* ========= TTS ========= */
 let VOICES=[]; function loadVoices(){ VOICES=speechSynthesis.getVoices(); els.voice.innerHTML=VOICES.map((v,i)=>`<option value="${i}">${v.name} (${v.lang})</option>`).join(''); if(state.ttsIndex!=null && VOICES[state.ttsIndex]) els.voice.value=state.ttsIndex; }
 speechSynthesis.onvoiceschanged=loadVoices; loadVoices();
 els.voice.addEventListener('change',()=>state.ttsIndex=+els.voice.value);
@@ -384,12 +440,12 @@ els.speakEn.addEventListener('click',()=>speak(`Now playing ${els.title.textCont
 els.speakUr.addEventListener('click',()=>speak(`اب چل رہا ہے ${els.title.textContent}`,'ur-PK'));
 els.stopTTS.addEventListener('click',()=>speechSynthesis.cancel());
 
-/* ===== Controls ===== */
+/* ========= CONTROLS ========= */
 els.play.addEventListener('click',()=>state.isPlaying?pause():play());
-els.prev.addEventListener('click',prev);
-els.next.addEventListener('click',()=>next(true));
-els.fwd.addEventListener('click',()=>seekBy(+SEEK_STEP));
-els.rew.addEventListener('click',()=>seekBy(-SEEK_STEP));
+els.miniPlay.addEventListener('click',()=>state.isPlaying?pause():play());
+els.prev.addEventListener('click',prev); els.miniPrev.addEventListener('click',prev);
+els.next.addEventListener('click',()=>next(true)); els.miniNext.addEventListener('click',()=>next(true));
+els.fwd.addEventListener('click',()=>seekBy(+SEEK_STEP)); els.rew.addEventListener('click',()=>seekBy(-SEEK_STEP));
 els.repeat.addEventListener('change',()=>state.repeat=els.repeat.checked);
 els.shuffle.addEventListener('change',()=>state.shuffle=els.shuffle.checked);
 window.addEventListener('keydown',(e)=>{
@@ -399,26 +455,36 @@ window.addEventListener('keydown',(e)=>{
   if(e.code==='ArrowLeft'){ seekBy(e.shiftKey? -SEEK_STEP : -5); }
 });
 
-/* ===== Add media ===== */
+/* ========= SHARE ========= */
+els.share.addEventListener('click',()=>{
+  const it=state.playlist[state.index]; if(!it){ toast('Nothing to share'); return; }
+  const url = it.url;
+  if(navigator.share && /^https?:\/\//.test(url)){ navigator.share({title:it.title,text:'Check this out',url}).catch(()=>{}); }
+  else { navigator.clipboard.writeText(url).then(()=>toast('Link copied'),()=>toast('Copy failed')); }
+});
+
+/* ========= ADD / SAVE / CLEAR ========= */
 els.addYT.addEventListener('click',()=>{
   const url=prompt('Paste YouTube URL:'); if(!url) return;
   state.playlist.push({type:'yt', url, title:'YouTube'}); saveStore(); renderList();
   if(state.playlist.length===1){ state.index=0; loadCurrent(false); }
 });
-els.addLocal.addEventListener('change',e=>{
+els.addLocal.addEventListener('change',(e)=>{
   const files=[...e.target.files];
   for(const f of files){ const url=URL.createObjectURL(f); state.playlist.push({type:'local', url, title:f.name}); }
   saveStore(); renderList();
   if(state.playlist.length===files.length){ state.index=0; loadCurrent(false); }
 });
+els.saveList.addEventListener('click',()=>{ saveStore(); toast('Playlist saved'); });
+els.clearList.addEventListener('click',()=>{ if(!confirm('Clear playlist?')) return; state.playlist.length=0; saveStore(); renderList(); toast('Cleared'); });
 
-/* ===== Boot ===== */
+/* ========= BOOT ========= */
 function boot(){ loadStore(); renderList(); loadCurrent(false);
-  els.vol.value=Math.round(state.vol*100); els.duck.value=Math.round(state.duckAmt*100);
+  els.vol.value=Math.round(state.vol*100); els.duck.value=Math.round(state.duckAmt*100); updatePlayBtns();
 }
 boot();
 
-/* ===== Media Session ===== */
+/* ========= Media Session ========= */
 if('mediaSession' in navigator){
   navigator.mediaSession.setActionHandler('play', play);
   navigator.mediaSession.setActionHandler('pause', pause);
