@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Aurora Voice Player</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+  <style>
+    :root{
+      --primary:#2563eb; --primary-2:#3b82f6; --bg:#f5f7fb; --text:#0f172a; --muted:#64748b; --border:#e5e7eb;
+      --success:#16a34a; --danger:#ef4444; --accent:#22d3ee;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Arial,sans-serif}
+    /* NAV */
+    .app-nav{background:linear-gradient(90deg,var(--primary),#334155);color:#fff;box-shadow:0 6px 24px rgba(0,0,0,.12)}
+    .brand{display:flex;gap:.6rem;align-items:center;font-weight:800}
+
+    /* LAYOUT */
+    .container-narrow{max-width:1100px;margin:18px auto;padding:0 12px}
+    .panel{background:#fff;border:1px solid var(--border);border-radius:16px;box-shadow:0 10px 28px rgba(0,0,0,.07);margin-bottom:18px}
+    .panel-header{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:1px solid var(--border)}
+    .badge-soft{background:#e0f2fe;color:#0c4a6e;border-radius:999px;padding:4px 10px;font-weight:700;font-size:.8rem}
+
+    /* PLAYER */
+    .player{display:grid;grid-template-columns:1fr 360px;gap:18px;padding:16px}
+    @media (max-width:900px){.player{grid-template-columns:1fr}}
+
+    .artwork{display:grid;gap:10px}
+    .cover{width:100%;max-width:420px;border-radius:14px;border:1px solid var(--border)}
+    #viz{width:100%;max-width:420px;border-radius:10px;background:#eef2ff;border:1px solid var(--border)}
+
+    .title{font-weight:800;font-size:1.1rem}
+    .sub{color:var(--muted)}
+
+    .controls{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;align-items:center}
+    .btn-pill{border:none;border-radius:999px;font-weight:800;cursor:pointer;padding:9px 16px}
+    .btn-main{background:linear-gradient(90deg,var(--primary),var(--primary-2));color:#fff}
+    .btn-ghost{background:#eef2ff;color:#1e3a8a}
+    .btn-icon{padding:9px 11px}
+    .btn-pill:hover{filter:brightness(.98)}
+
+    .seek{display:grid;grid-template-columns:60px 1fr 60px;gap:10px;align-items:center;margin-top:10px}
+    .sliders{display:flex;gap:18px;flex-wrap:wrap;margin-top:10px}
+    .slider{display:grid;gap:6px;min-width:220px}
+
+    .toggles{display:flex;gap:14px;flex-wrap:wrap;align-items:center;margin-top:8px}
+    .status{color:var(--muted)}
+
+    .tts{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:8px}
+    .mic{display:flex;gap:8px;align-items:center;margin-top:8px}
+    .pill{background:#fee2e2;color:#7f1d1d;padding:3px 12px;border-radius:999px;font-weight:700}
+
+    /* PLAYLIST */
+    .playlist{list-style:none;margin:0;padding:0;border:1px dashed var(--border);border-radius:12px;min-height:140px;background:#fafafa}
+    .playlist li{display:grid;grid-template-columns:56px 1fr auto;gap:10px;align-items:center;padding:8px 10px;border-bottom:1px solid var(--border);cursor:grab;background:#fff}
+    .playlist li:last-child{border-bottom:none}
+    .thumb{width:56px;height:42px;border-radius:8px;object-fit:cover;border:1px solid var(--border)}
+    .row-title{font-weight:700}
+    .row-sub{color:var(--muted);font-size:.9rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .row-actions{display:flex;gap:6px}
+
+    .file input{display:none}
+    .hint kbd{background:#0f172a;color:#fff;padding:2px 6px;border-radius:4px;font-size:.85rem}
+  </style>
+</head>
+<body>
+  <nav class="navbar app-nav">
+    <div class="container-fluid">
+      <div class="brand"><span>🎧</span><span>Aurora Voice Player</span></div>
+      <div class="d-flex gap-2 align-items-center">
+        <div class="form-check form-switch text-white me-2">
+          <input class="form-check-input" type="checkbox" id="speechToggle">
+          <label class="form-check-label" for="speechToggle">Speech input</label>
+        </div>
+        <button id="install" class="btn btn-sm btn-outline-light">Install</button>
+      </div>
+    </div>
+  </nav>
+
+  <main class="container-narrow">
+    <!-- PLAYER PANEL -->
+    <section class="panel">
+      <div class="panel-header">
+        <h1 class="m-0 fs-5">Voice‑Controlled Media Player</h1>
+        <span class="badge-soft" id="modeBadge">Web App</span>
+      </div>
+      <div class="player">
+        <div class="left">
+          <div class="artwork">
+            <img id="cover" class="cover" src="https://dummyimage.com/800x800/f1f5f9/0f172a&text=Artwork" alt="Cover">
+            <canvas id="viz" width="420" height="90" aria-label="Audio visualization"></canvas>
+          </div>
+          <div class="mt-2">
+            <div class="title" id="trackTitle">—</div>
+            <div class="sub" id="trackSub">—</div>
+          </div>
+
+          <div class="controls">
+            <button id="prev" class="btn-pill btn-ghost btn-icon" title="Shift+Left">⏮️</button>
+            <button id="rew" class="btn-pill btn-ghost btn-icon" title="Left (–30s)">⏪</button>
+            <button id="play" class="btn-pill btn-main" title="Space">Play</button>
+            <button id="fwd" class="btn-pill btn-ghost btn-icon" title="Right (+30s)">⏩</button>
+            <button id="next" class="btn-pill btn-ghost btn-icon" title="Shift+Right">⏭️</button>
+          </div>
+
+          <div class="seek">
+            <span id="tCur">00:00</span>
+            <input id="seek" type="range" min="0" max="1000" value="0">
+            <span id="tDur">00:00</span>
+          </div>
+
+          <div class="sliders">
+            <label class="slider"><span>Volume</span><input id="vol" type="range" min="0" max="100" value="80"></label>
+            <label class="slider"><span>Ducking</span><input id="duck" type="range" min="20" max="100" value="35"></label>
+          </div>
+
+          <div class="toggles">
+            <label><input id="repeat" type="checkbox"> Repeat</label>
+            <label><input id="shuffle" type="checkbox" checked> Shuffle</label>
+            <span id="status" class="status">Ready.</span>
+          </div>
+
+          <div class="tts">
+            <select id="voice" class="form-select form-select-sm" style="max-width:280px"></select>
+            <button id="speakEn" class="btn btn-sm btn-outline-primary">Speak EN</button>
+            <button id="speakUr" class="btn btn-sm btn-outline-primary">Speak اردو</button>
+            <button id="stopTTS" class="btn btn-sm btn-outline-secondary">Stop TTS</button>
+          </div>
+
+          <div class="mic">
+            <span>Mic:</span><span id="mic" class="pill">off</span>
+            <span class="status hint">Hotkeys: <kbd>Space</kbd> • <kbd>←/→</kbd> seek • <kbd>Shift</kbd>+<kbd>←/→</kbd> prev/next</span>
+          </div>
+        </div>
+
+        <div class="right">
+          <div class="p-2 pb-3 d-flex flex-wrap gap-2 align-items-center">
+            <button id="addYT" class="btn btn-sm btn-outline-primary"><i class="fa-brands fa-youtube me-1"></i>Add YouTube</button>
+            <label class="file"><input id="addLocal" type="file" accept="audio/*" multiple><span class="btn btn-sm btn-outline-secondary"><i class="fa-solid fa-file-audio me-1"></i>Add Local</span></label>
+          </div>
+          <ul id="list" class="playlist" aria-label="Playlist (drag to reorder)"></ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- TIPS PANEL -->
+    <section class="panel">
+      <div class="panel-header"><h2 class="m-0 fs-6">Tips</h2></div>
+      <div class="p-3">
+        <ul class="mb-0">
+          <li>Serve locally (e.g. <code>python -m http.server 5173</code>) for mic & YouTube API.</li>
+          <li>If a YouTube video won’t autoplay, click <strong>Play</strong> once (browser policy).</li>
+          <li>Use the <strong>Speech input</strong> switch to enable/disable voice commands (off by default).</li>
+        </ul>
+      </div>
+    </section>
+  </main>
+
+  <!-- YouTube API injected by script -->
+  <script>
+    /* ===== Helpers ===== */
+    const fmt = s => { s=Math.max(0,Math.floor(s)); const m=String(Math.floor(s/60)).padStart(2,'0'); const ss=String(s%60).padStart(2,'0'); return m+':'+ss };
+
+    /* ===== State ===== */
+    const SEEK_STEP=30, MIC_THRESHOLD=0.025, QUIET_DELAY=1000, DUCK_TICK=60, VIZ_BARS=64;
+    let state={playlist:[], index:0, isPlaying:false, useYT:false, repeat:false, shuffle:true, duration:0, lastSpeech:0, duckAmt:.35, vol:.85, ttsIndex:null, speechOn:false};
+
+    /* ===== DOM ===== */
+    const els={
+      cover:document.getElementById('cover'), title:document.getElementById('trackTitle'), sub:document.getElementById('trackSub'),
+      prev:document.getElementById('prev'), rew:document.getElementById('rew'), play:document.getElementById('play'), fwd:document.getElementById('fwd'), next:document.getElementById('next'),
+      seek:document.getElementById('seek'), tCur:document.getElementById('tCur'), tDur:document.getElementById('tDur'), vol:document.getElementById('vol'), duck:document.getElementById('duck'),
+      repeat:document.getElementById('repeat'), shuffle:document.getElementById('shuffle'), status:document.getElementById('status'), list:document.getElementById('list'),
+      addYT:document.getElementById('addYT'), addLocal:document.getElementById('addLocal'),
+      voice:document.getElementById('voice'), speakEn:document.getElementById('speakEn'), speakUr:document.getElementById('speakUr'), stopTTS:document.getElementById('stopTTS'), mic:document.getElementById('mic'),
+      viz:document.getElementById('viz'), install:document.getElementById('install'), speechToggle:document.getElementById('speechToggle')
+    };
+    function setStatus(msg, kind='info'){ els.status.textContent=msg; els.status.style.color = (kind==='error') ? 'var(--danger)' : 'var(--muted)'; }
+    function updatePlayBtn(){ els.play.textContent = state.isPlaying ? 'Pause' : 'Play'; }
+
+    /* ===== Local audio + WebAudio ===== */
+    const audioEl=new Audio(); audioEl.crossOrigin='anonymous';
+    const ctx=new (window.AudioContext||window.webkitAudioContext)();
+    const src=ctx.createMediaElementSource(audioEl);
+    const gain=ctx.createGain(); gain.gain.value = state.vol;
+    const analyser=ctx.createAnalyser(); analyser.fftSize=2048; analyser.smoothingTimeConstant=.85;
+    src.connect(gain).connect(analyser).connect(ctx.destination);
+
+    // Visualization
+    (function drawViz(){
+      const g=els.viz.getContext('2d'); const buf=new Uint8Array(analyser.frequencyBinCount);
+      function loop(){
+        analyser.getByteFrequencyData(buf); g.clearRect(0,0,els.viz.width,els.viz.height);
+        const step=Math.floor(buf.length/VIZ_BARS), w=(els.viz.width/VIZ_BARS)-2;
+        for(let i=0;i<VIZ_BARS;i++){ const v=buf[i*step]/255, h=v*els.viz.height, x=i*(w+2), y=els.viz.height-h; g.fillStyle=i%2?'#3b82f6':'#22d3ee'; g.fillRect(x,y,w,h) }
+        requestAnimationFrame(loop);
+      }
+      loop();
+    })();
+
+    /* ===== YouTube API (robust) ===== */
+    let ytPlayer=null; let ytReady=false; let ytReadyPromise=null;
+    function loadYTAPI(){
+      if (window.YT && window.YT.Player) { ytReady=true; return Promise.resolve(); }
+      if (ytReadyPromise) return ytReadyPromise;
+      ytReadyPromise = new Promise((resolve,reject)=>{
+        const s=document.createElement('script'); s.src='https://www.youtube.com/iframe_api'; s.async=true; s.onerror=()=>reject(new Error('YT API failed'));
+        window.onYouTubeIframeAPIReady=()=>{ ytReady=true; resolve(); };
+        document.head.appendChild(s);
+      });
+      return ytReadyPromise;
+    }
+
+    async function ensureYT(){
+      try{
+        await loadYTAPI();
+        if(!ytPlayer){
+          const host=document.createElement('div'); host.id='yt-player'; host.style.width='0'; host.style.height='0'; host.style.position='absolute'; host.style.left='-9999px';
+          document.body.appendChild(host);
+          ytPlayer = new YT.Player('yt-player', {
+            height:'0', width:'0', videoId:'', playerVars:{ autoplay:0, controls:0 },
+            events:{ onStateChange:(e)=>{
+              if(e.data===YT.PlayerState.ENDED) next(true);
+              if(e.data===YT.PlayerState.PLAYING){ state.isPlaying=true; updatePlayBtn(); }
+              if(e.data===YT.PlayerState.PAUSED){ state.isPlaying=false; updatePlayBtn(); }
+            }}
+          });
+        }
+        return true;
+      }catch(e){ setStatus('YouTube API unavailable.', 'error'); return false; }
+    }
+
+    /* ===== Playlist ===== */
+    const DEFAULT=[
+      {type:'yt', url:'https://www.youtube.com/watch?v=AJtDXIazrMo', title:'APT. — ROSÉ & Bruno Mars'},
+      {type:'yt', url:'https://www.youtube.com/watch?v=BSJa1UytM8w', title:'Saiyaara — Faheem Abdullah'},
+      {type:'yt', url:'https://www.youtube.com/watch?v=m4iPSPoe1Y8', title:'Naina — Arijit Singh'}
+    ];
+    function loadStore(){ try{ const raw=localStorage.getItem('auroraPlaylist'); state.playlist = raw? JSON.parse(raw): DEFAULT.slice(); }catch{ state.playlist=DEFAULT.slice(); } }
+    function saveStore(){ localStorage.setItem('auroraPlaylist', JSON.stringify(state.playlist)); }
+    function ytId(url){ try{ const u=new URL(url); if(u.hostname.includes('youtu.be')) return u.pathname.slice(1); return u.searchParams.get('v'); }catch{ return null; } }
+
+    function renderList(){
+      els.list.innerHTML=''; state.playlist.forEach((it,i)=>{
+        const li=document.createElement('li'); li.draggable=true; li.dataset.i=i;
+        const id = (it.type==='yt')? ytId(it.url): null;
+        const img=document.createElement('img'); img.className='thumb'; img.src=id?`https://i.ytimg.com/vi/${id}/hqdefault.jpg`:'https://dummyimage.com/112x84/ede9fe/3730a3&text=Audio';
+        const main=document.createElement('div'); const t=document.createElement('div'); t.className='row-title'; t.textContent=it.title || (it.type==='yt'?'YouTube item':'Local file');
+        const sub=document.createElement('div'); sub.className='row-sub'; sub.textContent=it.url; main.appendChild(t); main.appendChild(sub);
+        const act=document.createElement('div'); act.className='row-actions';
+        const b1=document.createElement('button'); b1.className='btn btn-sm btn-outline-primary'; b1.textContent='Play'; b1.onclick=()=>{state.index=i; loadCurrent(true)};
+        const b2=document.createElement('button'); b2.className='btn btn-sm btn-outline-secondary'; b2.textContent='Remove'; b2.onclick=()=>{state.playlist.splice(i,1); saveStore(); renderList(); };
+        act.appendChild(b1); act.appendChild(b2);
+        li.appendChild(img); li.appendChild(main); li.appendChild(act); els.list.appendChild(li);
+      });
+      // Drag-reorder
+      let dragEl=null; els.list.querySelectorAll('li').forEach(li=>{
+        li.addEventListener('dragstart',e=>{dragEl=li; e.dataTransfer.effectAllowed='move'});
+        li.addEventListener('dragover',e=>e.preventDefault());
+        li.addEventListener('drop',e=>{e.preventDefault(); if(!dragEl||dragEl===li)return; const from=+dragEl.dataset.i, to=+li.dataset.i; const it=state.playlist.splice(from,1)[0]; state.playlist.splice(to,0,it); saveStore(); renderList();});
+      });
+    }
+
+    function setMeta({title,sub,cover}){ els.title.textContent=title||'—'; els.sub.textContent=sub||'—'; if(cover) els.cover.src=cover; }
+
+    async function loadCurrent(autoplay=false){
+      const it=state.playlist[state.index]; if(!it) return;
+      state.useYT = (it.type==='yt');
+      setMeta({ title: it.title, sub: it.type==='yt'?'YouTube':'Local File' });
+      // Pause both sources
+      audioEl.pause(); if(ytPlayer) ytPlayer.pauseVideo?.();
+
+      if(state.useYT){
+        const ok = await ensureYT(); if(!ok){ setStatus('YouTube not ready', 'error'); return; }
+        const id = ytId(it.url); if(!id){ setStatus('Invalid YouTube URL', 'error'); return; }
+        ytPlayer.loadVideoById(id);
+        ytPlayer.setVolume(Math.round(state.vol*100));
+        state.duration = 0; els.tDur.textContent = '—:—';
+        // artwork
+        setMeta({ title: it.title, sub: 'YouTube', cover: `https://i.ytimg.com/vi/${id}/hqdefault.jpg` });
+        if (!autoplay) ytPlayer.pauseVideo();
+      } else {
+        audioEl.src = it.url; await audioEl.play().catch(()=>{}); audioEl.pause();
+        state.duration = isFinite(audioEl.duration)? audioEl.duration : 0; els.tDur.textContent = fmt(state.duration||0);
+        if (autoplay) play();
+      }
+      updateProgress(); saveStore();
+    }
+
+    function play(){ if(state.useYT&&ytPlayer) ytPlayer.playVideo(); else audioEl.play(); state.isPlaying=true; updatePlayBtn(); setStatus('Playing'); if(ctx.state==='suspended') ctx.resume(); }
+    function pause(){ if(state.useYT&&ytPlayer) ytPlayer.pauseVideo(); else audioEl.pause(); state.isPlaying=false; updatePlayBtn(); setStatus('Paused'); }
+    function next(auto=false){ if(state.shuffle && !auto){ state.index=Math.floor(Math.random()*state.playlist.length) } else if(state.repeat && auto){ } else { state.index=(state.index+1)%state.playlist.length } loadCurrent(true); }
+    function prev(){ state.index=(state.index-1+state.playlist.length)%state.playlist.length; loadCurrent(true); }
+
+    // Progress
+    function updateProgress(){
+      const pos = state.useYT&&ytPlayer? (ytPlayer.getCurrentTime?.()||0) : (audioEl.currentTime||0);
+      const dur = state.useYT&&ytPlayer? (ytPlayer.getDuration?.()||state.duration||0) : (isFinite(audioEl.duration)?audioEl.duration:(state.duration||0));
+      els.tCur.textContent = fmt(pos); els.tDur.textContent = dur? fmt(dur): '—:—';
+      els.seek.max = Math.round((dur||1)*1000); els.seek.value = Math.round(pos*1000); state.duration = dur;
+      requestAnimationFrame(updateProgress);
+    }
+
+    els.seek.addEventListener('input',()=>{const s=+els.seek.value/1000; if(state.useYT&&ytPlayer) ytPlayer.seekTo(s,true); else audioEl.currentTime=s});
+
+    // Volume + ducking
+    let duckFactor=1; function applyDuck(f){duckFactor=f; if(state.useYT&&ytPlayer) ytPlayer.setVolume(Math.round(state.vol*100*f)); gain.gain.value=state.vol*f}
+    els.vol.addEventListener('input',()=>{state.vol=+els.vol.value/100; if(state.useYT&&ytPlayer) ytPlayer.setVolume(Math.round(state.vol*100)); gain.gain.value=state.vol*duckFactor});
+    els.duck.addEventListener('input',()=>{state.duckAmt=+els.duck.value/100});
+
+    // Mic (ducking only)
+    let micStream, micCtx, micAnalyser;
+    (async function initMic(){
+      try{
+        micStream = await navigator.mediaDevices.getUserMedia({audio:true});
+        els.mic.textContent='on'; els.mic.style.background='#dcfce7'; els.mic.style.color='#14532d';
+        micCtx=new (window.AudioContext||window.webkitAudioContext)(); const s=micCtx.createMediaStreamSource(micStream);
+        micAnalyser=micCtx.createAnalyser(); micAnalyser.fftSize=1024; s.connect(micAnalyser);
+        const buf=new Uint8Array(micAnalyser.fftSize);
+        (function loop(){
+          micAnalyser.getByteTimeDomainData(buf); let sum=0; for(let i=0;i<buf.length;i++){const v=(buf[i]-128)/128; sum+=v*v}
+          const rms=Math.sqrt(sum/buf.length); const speaking=rms>MIC_THRESHOLD; if(speaking) state.lastSpeech=performance.now();
+          const since=performance.now()-state.lastSpeech; const target = since<QUIET_DELAY ? (1-state.duckAmt) : 1;
+          applyDuck(duckFactor+(target-duckFactor)*0.08);
+          setTimeout(loop, DUCK_TICK);
+        })();
+      }catch(e){ els.mic.textContent='off'; els.mic.style.background='#fee2e2'; els.mic.style.color='#7f1d1d'; setStatus('Mic blocked — ducking off','error'); }
+    })();
+
+    // Speech recognition (toggleable, OFF by default)
+    let rec=null; let SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    function startSpeech(){
+      if(!SR){ setStatus('SpeechRecognition not supported in this browser','error'); return; }
+      if(rec){ try{rec.stop()}catch{} }
+      rec = new SR(); rec.lang='en-GB'; rec.continuous=true; rec.interimResults=false;
+      rec.onresult=(e)=>{ for(let i=e.resultIndex;i<e.results.length;i++){ if(e.results[i].isFinal) handleCmd(e.results[i][0].transcript.toLowerCase()) } };
+      rec.onerror=()=>{ if(state.speechOn) setTimeout(()=>{ try{rec.start()}catch{} }, 700)};
+      rec.onend=()=>{ if(state.speechOn) setTimeout(()=>{ try{rec.start()}catch{} }, 500)};
+      try{ rec.start(); setStatus('Speech input ON'); }catch{ setStatus('Could not start speech input','error'); }
+    }
+    function stopSpeech(){ if(rec){ try{ rec.onend=null; rec.onerror=null; rec.stop(); }catch{} } setStatus('Speech input OFF'); }
+
+    els.speechToggle.addEventListener('change', (e)=>{ state.speechOn = e.target.checked; state.speechOn ? startSpeech() : stopSpeech(); });
+
+    function handleCmd(t){
+      if(/next/.test(t)) return next();
+      if(/prev|previous|back/.test(t)) return prev();
+      if(/forward|ahead/.test(t)) return seekBy(+SEEK_STEP);
+      if(/rewind|reverse|back/.test(t)) return seekBy(-SEEK_STEP);
+      if(/restart|again/.test(t)) return restart();
+      if(/pause|stop|wait/.test(t)) return pause();
+      if(/play|resume|continue|go on/.test(t)) return play();
+      if(/volume up|louder/.test(t)) return volBy(+0.1);
+      if(/volume down|quieter/.test(t)) return volBy(-0.1);
+      if(/shuffle/.test(t)){ state.shuffle=!state.shuffle; els.shuffle.checked=state.shuffle; setStatus('Shuffle '+(state.shuffle?'on':'off')) }
+      if(/repeat/.test(t)){ state.repeat=!state.repeat; els.repeat.checked=state.repeat; setStatus('Repeat '+(state.repeat?'on':'off')) }
+    }
+
+    function seekBy(d){ const cur=state.useYT&&ytPlayer? ytPlayer.getCurrentTime(): audioEl.currentTime; const target=Math.max(0, Math.min((state.duration||0), cur+d)); if(state.useYT&&ytPlayer) ytPlayer.seekTo(target,true); else audioEl.currentTime=target; }
+    function restart(){ if(state.useYT&&ytPlayer) ytPlayer.seekTo(0,true); else audioEl.currentTime=0; }
+    function volBy(d){ state.vol=Math.max(0,Math.min(1,state.vol+d)); els.vol.value=Math.round(state.vol*100); if(state.useYT&&ytPlayer) ytPlayer.setVolume(Math.round(state.vol*100)); gain.gain.value=state.vol*duckFactor }
+
+    // TTS
+    let VOICES=[]; function loadVoices(){ VOICES = speechSynthesis.getVoices(); els.voice.innerHTML = VOICES.map((v,i)=>`<option value="${i}">${v.name} (${v.lang})</option>`).join(''); if(state.ttsIndex!=null && VOICES[state.ttsIndex]) els.voice.value = state.ttsIndex; }
+    speechSynthesis.onvoiceschanged = loadVoices; loadVoices();
+    els.voice.addEventListener('change',()=>state.ttsIndex=+els.voice.value);
+    function speak(text,lang){ speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(text); const v=VOICES[state.ttsIndex]; if(v) u.voice=v; u.lang=v?.lang||lang; u.rate=.95; u.pitch=1; speechSynthesis.speak(u); }
+    document.getElementById('speakEn').addEventListener('click',()=>speak(`Now playing ${els.title.textContent}`,'en-GB'));
+    document.getElementById('speakUr').addEventListener('click',()=>speak(`اب چل رہا ہے ${els.title.textContent}`,'ur-PK'));
+    document.getElementById('stopTTS').addEventListener('click',()=>speechSynthesis.cancel());
+
+    // Controls
+    els.play.addEventListener('click', ()=> state.isPlaying? pause() : play());
+    els.prev.addEventListener('click', prev);
+    els.next.addEventListener('click', ()=> next(true));
+    els.fwd.addEventListener('click', ()=> seekBy(+SEEK_STEP));
+    els.rew.addEventListener('click', ()=> seekBy(-SEEK_STEP));
+    els.repeat.addEventListener('change', ()=> state.repeat = els.repeat.checked);
+    els.shuffle.addEventListener('change', ()=> state.shuffle = els.shuffle.checked);
+    window.addEventListener('keydown', (e)=>{
+      if(['INPUT','TEXTAREA','SELECT'].includes(document.activeElement.tagName)) return;
+      if(e.code==='Space'){ e.preventDefault(); state.isPlaying? pause(): play(); }
+      if(e.code==='ArrowRight'){ seekBy(e.shiftKey? +SEEK_STEP : +5); }
+      if(e.code==='ArrowLeft'){ seekBy(e.shiftKey? -SEEK_STEP : -5); }
+    });
+
+    // Add media
+    els.addYT.addEventListener('click', ()=>{
+      const url = prompt('Paste YouTube URL:'); if(!url) return;
+      state.playlist.push({type:'yt', url, title:'YouTube'}); saveStore(); renderList(); if(state.playlist.length===1){ state.index=0; loadCurrent(false); }
+    });
+    els.addLocal.addEventListener('change', (e)=>{
+      const files=[...e.target.files]; for(const f of files){ const url=URL.createObjectURL(f); state.playlist.push({type:'local', url, title:f.name}); }
+      saveStore(); renderList(); if(state.playlist.length===files.length){ state.index=0; loadCurrent(false); }
+    });
+
+    // PWA (optional)
+    let deferred; window.addEventListener('beforeinstallprompt',(e)=>{ e.preventDefault(); deferred=e; els.install.style.display='inline-flex'; });
+    els.install.addEventListener('click', ()=>{ if(!deferred) return; deferred.prompt(); deferred=null; });
+
+    // Boot
+    function boot(){ loadStore(); renderList(); loadCurrent(false); els.vol.value=Math.round(state.vol*100); els.duck.value=Math.round(state.duckAmt*100); }
+    boot();
+
+    // Update YT artwork periodically
+    setInterval(()=>{ const it=state.playlist[state.index]; if(!it||it.type!=='yt') return; const id=ytId(it.url); if(id) setMeta({title:it.title, sub:'YouTube', cover:`https://i.ytimg.com/vi/${id}/hqdefault.jpg`}); }, 2000);
+
+    // Media Session
+    if('mediaSession' in navigator){
+      navigator.mediaSession.setActionHandler('play', play);
+      navigator.mediaSession.setActionHandler('pause', pause);
+      navigator.mediaSession.setActionHandler('previoustrack', prev);
+      navigator.mediaSession.setActionHandler('nexttrack', ()=> next(true));
+      navigator.mediaSession.setActionHandler('seekforward', ()=> seekBy(+SEEK_STEP));
+      navigator.mediaSession.setActionHandler('seekbackward', ()=> seekBy(-SEEK_STEP));
+    }
+  </script>
+</body>
+</html>
