@@ -569,6 +569,9 @@ input[type="checkbox"]::before {
 input[type="checkbox"]:checked::before {
   left: 22px;
 }
+.playlist li { grid-template-columns: 56px 1fr 220px; }
+.row-actions .btn { padding: 6px 10px; font-size: 0.85rem; }
+
 
 /* Improved select elements */
 select {
@@ -577,6 +580,10 @@ select {
   background-position: right 10px center;
   background-size: 16px;
   padding-right: 40px;
+}
+@media (max-width: 900px) {
+  .playlist li { grid-template-columns: 56px 1fr; }
+  .row-actions { display: none; }
 }
 
 /* Animation for visualization */
