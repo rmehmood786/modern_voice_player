@@ -3,18 +3,6 @@ const $ = s => document.querySelector(s);
 const fmt = s => { s=Math.max(0,Math.floor(s)); const m=String(Math.floor(s/60)).padStart(2,'0'); const ss=String(s%60).padStart(2,'0'); return m+':'+ss; };
 function toast(msg){const t=$('#toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),1300);}
 function fileNameFrom(url){ try{const u=new URL(url); return u.pathname.split('/').pop();}catch{return url.split('/').pop();}}
-function ytId(url) {
-  try {
-    const u = new URL(url);
-    if (u.hostname.includes('youtu.be')) {
-      return u.pathname.slice(1); // short link like youtu.be/abcd1234
-    }
-    return u.searchParams.get('v'); // normal YouTube link
-  } catch {
-    return null;
-  }
-}
-
 
 /* ===== State ===== */
 const SEEK_STEP=30, MIC_THRESHOLD=0.025, QUIET_DELAY=1000, DUCK_TICK=60, VIZ_BARS=72;
@@ -105,65 +93,39 @@ document.querySelectorAll('[data-eq]').forEach(b=>b.addEventListener('click',()=
   })();
 })();
 
-// ===== YouTube Embed Fix =====
-let ytPlayer = null, ytApiP = null, ytReadyP = null;
-
+/* ===== YouTube ===== */
+let ytPlayer=null, ytApiP=null, ytReadyP=null;
 function loadYTAPI(){
   if(window.YT && window.YT.Player) return Promise.resolve();
   if(ytApiP) return ytApiP;
-  ytApiP = new Promise((resolve,reject)=>{
-    const s = document.createElement('script');
-    s.src = 'https://www.youtube.com/iframe_api';
-    s.async = true;
-    s.onerror = ()=>reject(new Error('YT API failed'));
-    window.onYouTubeIframeAPIReady = ()=>resolve();
+  ytApiP=new Promise((resolve,reject)=>{
+    const s=document.createElement('script'); s.src='https://www.youtube.com/iframe_api'; s.async=true;
+    s.onerror=()=>reject(new Error('YT API failed')); window.onYouTubeIframeAPIReady=()=>resolve();
     document.head.appendChild(s);
   });
   return ytApiP;
 }
-
 function createYT(){
   if(ytPlayer) return ytReadyP;
-  ytReadyP = new Promise((resolve)=>{
+  ytReadyP=new Promise((resolve)=>{
     ytPlayer = new YT.Player('ytMount',{
-      width: '100%',
-      height: '100%',
-      videoId: '',
-      // Use regular youtube.com host to reduce CORS noise
-      playerVars: {
-        autoplay: 0,
-        controls: 0,
-        rel: 0,
-        modestbranding: 1,
-        playsinline: 1,
-        origin: window.location.protocol + '//' + window.location.host
-      },
+      width:'100%', height:'100%', videoId:'',
+      host:'https://www.youtube-nocookie.com',
+      playerVars:{autoplay:0, controls:0, rel:0, modestbranding:1, playsinline:1, origin:location.origin},
       events:{
-        onReady: ()=>resolve(),
-        onStateChange: (e)=>{
-          if(e.data === YT.PlayerState.ENDED) next(true);
-          if(e.data === YT.PlayerState.PLAYING){
-            state.isPlaying = true;
-            updatePlayBtns();
-            document.getElementById('unmuteYT')
-              .classList.toggle('hidden', !ytPlayer.isMuted());
-          }
-          if(e.data === YT.PlayerState.PAUSED){
-            state.isPlaying = false;
-            updatePlayBtns();
-          }
+        onReady:()=>resolve(),
+        onStateChange:(e)=>{
+          if(e.data===YT.PlayerState.ENDED) next(true);
+          if(e.data===YT.PlayerState.PLAYING){ state.isPlaying=true; updatePlayBtns(); $('#unmuteYT').classList.toggle('hidden', !ytPlayer.isMuted()); }
+          if(e.data===YT.PlayerState.PAUSED){ state.isPlaying=false; updatePlayBtns(); }
         }
       }
     });
   });
   return ytReadyP;
 }
-
-async function ensureYT(){
-  await loadYTAPI();
-  await createYT();
-}
-
+async function ensureYT(){ await loadYTAPI(); await createYT(); }
+function ytId(url){ try{ const u=new URL(url); if(u.hostname.includes('youtu.be')) return u.pathname.slice(1); return u.searchParams.get('v'); }catch{return null} }
 
 /* ===== Playlist / Storage ===== */
 const DEFAULT=[
@@ -515,7 +477,9 @@ els.share.addEventListener('click',()=>{
   (navigator.clipboard?.writeText(url)||Promise.reject()).then(()=>toast('Copied'),()=>toast('Copy failed'));
 });
 
-
+/* ===== Ducking (vol/duck sliders already wired above) ===== */
+let duckFactor=1;
+function applyDuck(f){ duckFactor=f; if(state.mode==='yt' && ytPlayer) ytPlayer.setVolume(Math.round(state.vol*100*f)); gain.gain.value=state.vol*f; }
 
 /* Media Session */
 if('mediaSession' in navigator){
