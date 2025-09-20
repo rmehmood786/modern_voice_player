@@ -3,17 +3,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Aurora Voice Player - Enhanced</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <title>VibeBox — Smart Media Player</title>
   <link rel="stylesheet" href="assets/styles.css" />
- 
-
 </head>
 <body>
   <div id="dim" class="overlay-dim"></div>
 
   <nav class="nav">
-    <div class="brand"><span>🎧</span><span>Aurora Voice Player</span></div>
+    <div class="brand"><span>🎧</span><span>VibeBox</span></div>
     <div class="nav-right">
       <label class="row" style="gap:8px"><input id="speechToggle" type="checkbox" /><span>Speech input</span></label>
       <label class="row" style="gap:8px"><input id="micToggle" type="checkbox" /><span>Mic ducking</span></label>
@@ -24,7 +21,7 @@
   <main class="container">
     <section class="card">
       <div class="card-h">
-        <h1 class="h1">Aurora Voice Player</h1>
+        <h1 class="h1">VibeBox — Smart Media Player</h1>
         <span class="badge" id="modeBadge">Web App</span>
       </div>
 
@@ -33,20 +30,17 @@
         <div class="now">
           <div class="player-shell">
             <div class="player-wrap" id="playerWrap" aria-label="Player">
-
               <!-- YouTube stage -->
               <div id="ytStage" class="stage hidden">
                 <div id="ytMount"></div>
                 <button id="unmuteYT" class="unmute hidden" title="Unmute">Unmute 🔊</button>
               </div>
-
               <!-- Local video stage -->
               <div id="videoStage" class="stage hidden">
                 <video id="localVideo" playsinline></video>
                 <button id="unmuteVID" class="unmute hidden" title="Unmute">Unmute 🔊</button>
               </div>
-
-              <!-- Local audio stage (card replaces the video/iframe) -->
+              <!-- Local audio stage -->
               <div id="audioStage" class="stage hidden">
                 <img id="audioCover" class="cover" alt="Artwork" />
                 <div class="audio-overlay">
@@ -58,7 +52,6 @@
                 </div>
                 <button id="unmuteAUD" class="unmute hidden" title="Unmute">Unmute 🔊</button>
               </div>
-
             </div>
           </div>
 
@@ -145,8 +138,11 @@
             <div class="tools">
               <button id="addYT" class="btn">📺 Add YouTube</button>
               <label><input id="addLocal" type="file" accept="audio/*,video/*" multiple style="display:none"/><span class="btn">🎵 Add Local</span></label>
+              <button id="importList" class="btn">📥 Import</button>
+              <button id="exportList" class="btn">📤 Export</button>
               <button id="saveList" class="btn">💾 Save</button>
               <button id="clearList" class="btn warn">🧹 Clear</button>
+              <input id="importInput" type="file" accept=".json,.txt" style="display:none" />
             </div>
             <ul id="list" class="playlist" aria-label="Playlist (drag to reorder)"></ul>
           </div>
@@ -185,32 +181,5 @@
   <div id="toast" class="toast"></div>
 
   <script src="assets/app.js"></script>
-  <script>
-    // Simple toast notification function
-    function toast(msg) {
-      const t = document.getElementById('toast');
-      t.textContent = msg;
-      t.classList.add('show');
-      setTimeout(() => t.classList.remove('show'), 1300);
-    }
-
-    // Add some visual feedback for buttons
-    document.querySelectorAll('.btn').forEach(btn => {
-      btn.addEventListener('click', function() {
-        this.style.transform = 'scale(0.95)';
-        setTimeout(() => {
-          this.style.transform = '';
-        }, 100);
-      });
-    });
-
-    // Add hover effect to playlist items
-    document.addEventListener('DOMContentLoaded', function() {
-      // This would be handled by your existing JavaScript
-      // We're just adding some visual improvements here
-      toast('Aurora Voice Player Loaded');
-    });
-  </script>
 </body>
 </html>
-
