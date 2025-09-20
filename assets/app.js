@@ -446,72 +446,118 @@ function handleCmd(t){
   if(/play|resume|continue/.test(t)) return play();
 }
 
-/* UI bindings */
-els.play.addEventListener('click',()=>state.isPlaying?pause():play());
-els.miniPlay.addEventListener('click',()=>state.isPlaying?pause():play());
-els.bigPlay.addEventListener('click',()=>state.isPlaying?pause():play());
-els.prev.addEventListener('click',prev); els.miniPrev.addEventListener('click',prev); els.bigPrev.addEventListener('click',prev);
-els.next.addEventListener('click',()=>next(true)); els.miniNext.addEventListener('click',()=>next(true)); els.bigNext.addEventListener('click',()=>next(true));
-els.fwd.addEventListener('click',()=>seekBy(+SEEK_STEP)); els.rew.addEventListener('click',()=>seekBy(-SEEK_STEP));
-els.repeat.addEventListener('change',()=>state.repeat=els.repeat.checked);
-els.shuffle.addEventListener('change',()=>state.shuffle=els.shuffle.checked);
-window.addEventListener('keydown',(e)=>{
-  if(['INPUT','TEXTAREA','SELECT'].includes(document.activeElement.tagName)) return;
-  if(e.code==='Space'){ e.preventDefault(); state.isPlaying?pause():play(); }
-  if(e.code==='ArrowRight'){ seekBy(e.shiftKey? +SEEK_STEP : +5); }
-  if(e.code==='ArrowLeft'){ seekBy(e.shiftKey? -SEEK_STEP : -5); }
+/* ===== Safe binding helpers ===== */
+const bind = (el, ev, fn) => {
+  if (el) el.addEventListener(ev, fn);
+  else if (console && console.warn) console.warn('Missing element for listener:', ev);
+};
+
+/* ===== UI bindings (null-safe) ===== */
+bind(els.play, 'click', () => state.isPlaying ? pause() : play());
+bind(els.miniPlay, 'click', () => state.isPlaying ? pause() : play());
+bind(els.bigPlay, 'click', () => state.isPlaying ? pause() : play());
+
+bind(els.prev, 'click', prev);
+bind(els.miniPrev, 'click', prev);
+bind(els.bigPrev, 'click', prev);
+
+bind(els.next, 'click', () => next(true));
+bind(els.miniNext, 'click', () => next(true));
+bind(els.bigNext, 'click', () => next(true));
+
+bind(els.fwd, 'click', () => seekBy(+SEEK_STEP));
+bind(els.rew, 'click', () => seekBy(-SEEK_STEP));
+
+bind(els.repeat, 'change', () => state.repeat = !!els.repeat?.checked);
+bind(els.shuffle, 'change', () => state.shuffle = !!els.shuffle?.checked);
+
+window.addEventListener('keydown', (e) => {
+  if (['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement.tagName)) return;
+  if (e.code === 'Space') { e.preventDefault(); state.isPlaying ? pause() : play(); }
+  if (e.code === 'ArrowRight') { seekBy(e.shiftKey ? +SEEK_STEP : +5); }
+  if (e.code === 'ArrowLeft') { seekBy(e.shiftKey ? -SEEK_STEP : -5); }
 });
 
 /* Unmute buttons */
-els.unmuteYT?.addEventListener('click',()=>{ try{ ytPlayer.unMute(); ytPlayer.setVolume(Math.round(state.vol*100)); els.unmuteYT.classList.add('hidden'); }catch{} });
-els.unmuteVID?.addEventListener('click',()=>{ els.localVideo.muted=false; els.unmuteVID.classList.add('hidden'); });
-els.unmuteAUD?.addEventListener('click',()=>{ audioEl.muted=false; els.unmuteAUD.classList.add('hidden'); });
+bind(els.unmuteYT, 'click', () => { try { ytPlayer.unMute(); ytPlayer.setVolume(Math.round(state.vol * 100)); els.unmuteYT.classList.add('hidden'); } catch {} });
+bind(els.unmuteVID, 'click', () => { els.localVideo.muted = false; els.unmuteVID.classList.add('hidden'); });
+bind(els.unmuteAUD, 'click', () => { audioEl.muted = false; els.unmuteAUD.classList.add('hidden'); });
+
+/* Volume / Duck sliders */
+bind(els.vol, 'input', () => {
+  state.vol = +els.vol.value / 100;
+  if (state.mode === 'yt' && ytPlayer) ytPlayer.setVolume(Math.round(state.vol * 100));
+  gain.gain.value = state.vol * (typeof duckFactor === 'number' ? duckFactor : 1);
+});
+bind(els.duck, 'input', () => { state.duckAmt = +els.duck.value / 100; });
+
+/* Rate / Sleep / Theater */
+bind(els.rate, 'change', (e) => { state.rate = +e.target.value; applyRate(); toast('Speed ' + state.rate + 'x'); });
+bind(els.sleep, 'change', (e) => {
+  if (state.sleepId) { clearTimeout(state.sleepId); state.sleepId = null; }
+  const m = +e.target.value; if (!m) { toast('Sleep off'); return; }
+  state.sleepId = setTimeout(() => { pause(); toast('Sleep: paused'); }, m * 60 * 1000);
+  toast('Sleep in ' + m + ' min');
+});
+bind(els.theater, 'click', () => {
+  const on = !document.body.classList.contains('theater');
+  document.body.classList.toggle('theater', on);
+  toast(on ? 'Theater ON' : 'Theater OFF');
+});
+
+/* Mic & Speech toggles */
+bind($('#micToggle'), 'change', (e) => { e.target.checked ? startMic() : stopMic(); });
+bind($('#speechToggle'), 'change', (e) => { state.speechOn = e.target.checked; state.speechOn ? startSpeech() : stopSpeech(); });
 
 /* Add / Save / Clear */
-els.addYT.addEventListener('click',async ()=>{
-  const url=prompt('Paste YouTube URL:'); if(!url) return;
-  // try to resolve title
-  let title=null;
-  try{
-    const resp = await fetch('https://noembed.com/embed?url='+encodeURIComponent(url));
-    if(resp.ok){ const data=await resp.json(); title=data.title||null; }
-  }catch{}
-  if(!title){ const id=ytId(url)||''; title = 'YouTube • '+id.slice(0,8); }
-  state.playlist.push({type:'yt', url, title});
-  saveStore(); renderList();
-  toast('Added to playlist');
-  if(state.playlist.length===1){ state.index=0; loadCurrent(true); }
+bind(els.addYT, 'click', async () => {
+  const url = prompt('Paste YouTube URL:'); if (!url) return;
+  let title = null;
+  try {
+    const resp = await fetch('https://noembed.com/embed?url=' + encodeURIComponent(url));
+    if (resp.ok) { const data = await resp.json(); title = data.title || null; }
+  } catch {}
+  if (!title) { const id = ytId(url) || ''; title = 'YouTube • ' + id.slice(0, 8); }
+  state.playlist.push({ type: 'yt', url, title });
+  saveStore(); renderList(); toast('Added to playlist');
+  if (state.playlist.length === 1) { state.index = 0; loadCurrent(true); }
 });
-els.addLocal.addEventListener('change',e=>{
-  const files=[...e.target.files];
-  for(const f of files){
-    const url=URL.createObjectURL(f);
-    const isVideo = (f.type||'').startsWith('video');
-    state.playlist.push({type:isVideo?'local-video':'local', url, title:f.name});
+
+bind(els.addLocal, 'change', (e) => {
+  const files = [...e.target.files];
+  for (const f of files) {
+    const url = URL.createObjectURL(f);
+    const isVideo = (f.type || '').startsWith('video');
+    state.playlist.push({ type: isVideo ? 'local-video' : 'local', url, title: f.name });
   }
   saveStore(); renderList(); toast('Local file(s) added');
-  if(state.playlist.length===files.length){ state.index=0; loadCurrent(true); }
+  if (state.playlist.length === files.length) { state.index = 0; loadCurrent(true); }
 });
-els.saveList.addEventListener('click',()=>{ saveStore(); toast('Saved'); });
-els.clearList.addEventListener('click',()=>{ if(!confirm('Clear playlist?')) return; state.playlist.length=0; saveStore(); renderList(); toast('Cleared'); });
+
+bind(els.saveList, 'click', () => { saveStore(); toast('Saved'); });
+bind(els.clearList, 'click', () => {
+  if (!confirm('Clear playlist?')) return;
+  state.playlist.length = 0; saveStore(); renderList(); toast('Cleared');
+});
 
 /* Import / Export */
-els.exportList.addEventListener('click', exportPlaylist);
-els.importList.addEventListener('click', ()=> els.importInput.click());
-els.importInput.addEventListener('change', ()=>{
-  const f=els.importInput.files[0]; if(!f) return;
-  const r=new FileReader();
-  r.onload=()=>importPlaylistFromText(String(r.result||''));
+bind(els.exportList, 'click', exportPlaylist);
+bind(els.importList, 'click', () => els.importInput && els.importInput.click());
+bind(els.importInput, 'change', () => {
+  const f = els.importInput.files?.[0]; if (!f) return;
+  const r = new FileReader();
+  r.onload = () => importPlaylistFromText(String(r.result || ''));
   r.readAsText(f);
 });
 
 /* Share current */
-els.share.addEventListener('click',()=>{
-  const it=state.playlist[state.index]; if(!it) return;
-  let url=it.url;
-  if(it.type==='yt'){ const id=ytId(it.url); const s=Math.floor(getTime()); url=`https://www.youtube.com/watch?v=${id}&t=${s}s`; }
-  (navigator.clipboard?.writeText(url)||Promise.reject()).then(()=>toast('Copied'),()=>toast('Copy failed'));
+bind(els.share, 'click', () => {
+  const it = state.playlist[state.index]; if (!it) return;
+  let url = it.url;
+  if (it.type === 'yt') { const id = ytId(it.url); const s = Math.floor(getTime()); url = `https://www.youtube.com/watch?v=${id}&t=${s}s`; }
+  (navigator.clipboard?.writeText(url) || Promise.reject()).then(() => toast('Copied'), () => toast('Copy failed'));
 });
+
 
 /* Media Session */
 if('mediaSession' in navigator){
