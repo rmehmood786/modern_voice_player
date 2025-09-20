@@ -18,7 +18,7 @@ body{ margin:0; background:var(--bg); color:var(--text);
 
 /* Layout */
 .container{ max-width:1280px; margin:24px auto; padding:0 16px; }
-.grid-main{ display:grid; grid-template-columns:2fr 1fr; gap:24px; }
+.grid-main{ display:block;}
 @media (max-width:1100px){ .grid-main{ grid-template-columns:1fr; }}
 
 /* Card */
